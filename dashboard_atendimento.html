@@ -212,46 +212,46 @@ async function carregarDashboard() {
     }
 
     function renderProgressBars(data) {
-        const container = document.getElementById('progress-container');
-        container.innerHTML = '';
-        data.forEach(item => {
-            const percentual = (item.Itens_Separados / item.Total_Itens) * 100;
-            const origemID = item.Origem.toLowerCase().replace(/ç/g, 'c').replace(/ã/g, 'a');
-            const progressBarHTML = `
-                <div class="progress-item" style="margin-bottom: 15px;">
-                    <div class="progress-title">${item.Origem}</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill progress-${origemID}" style="width: ${percentual.toFixed(0)}%;"></div>
-                    </div>
-                    <div class="progress-info">
-                        <span>${item.Itens_Separados}/${item.Total_Itens} itens</span>
-                        <span>${percentual.toFixed(1)}%</span>
-                    </div>
+    const container = document.getElementById('progress-container');
+    container.innerHTML = '';
+    data.forEach(item => {
+        const percentual = (item.Itens_Separados / item.Total_Itens) * 100;
+        const origemID = item.Origem.toLowerCase().replace(/ç/g, 'c').replace(/ã/g, 'a');
+        const progressBarHTML = `
+            <div class="progress-item" style="margin-bottom: 20px;">
+                <div class="progress-title" style="font-weight: 600; margin-bottom: 8px;">${item.Origem}</div>
+                <div class="progress-bar">
+                    <div class="progress-fill progress-${origemID}" style="width: ${percentual.toFixed(0)}%;"></div>
                 </div>
-            `;
-            container.innerHTML += progressBarHTML;
-        });
-    }
-
-    function updateInsights(data) {
-        const insightsContainer = document.getElementById('insights-container');
-        let prioridade = data.reduce((min, item) => {
-            let taxa = (item.Itens_Separados / item.Total_Itens);
-            return taxa < min.taxa ? { nome: item.Origem, taxa: taxa } : min;
-        }, { nome: '', taxa: 1 });
-
-        let melhorDesempenho = data.reduce((max, item) => {
-            let taxa = (item.Itens_Separados / item.Total_Itens);
-            return taxa > max.taxa ? { nome: item.Origem, taxa: taxa } : max;
-        }, { nome: '', taxa: 0 });
-
-        const insightsHTML = `
-            <h4 style="margin-bottom: 15px; color: var(--warning);">📋 Insights e Ações</h4>
-            <p>• Taxa de separação mais alta: <span class="highlight">${melhorDesempenho.nome} (${(melhorDesempenho.taxa * 100).toFixed(0)}%)</span>.</p>
-            <p>• Prioridade de atendimento: <span class="highlight">${prioridade.nome}</span> (apenas ${(prioridade.taxa * 100).toFixed(0)}% separados).</p>
+                <div class="progress-info">
+                    <span>${item.Itens_Separados}/${item.Total_Itens} itens</span>
+                    <span style="font-weight: 600;">${percentual.toFixed(1)}%</span>
+                </div>
+            </div>
         `;
-        insightsContainer.innerHTML = insightsHTML;
-    }
+        container.innerHTML += progressBarHTML;
+    });
+}
+
+   function updateInsights(data) {
+    const insightsContainer = document.getElementById('insights-container');
+    let prioridade = data.reduce((min, item) => {
+        let taxa = (item.Itens_Separados / item.Total_Itens);
+        return taxa < min.taxa ? { nome: item.Origem, taxa: taxa } : min;
+    }, { nome: '', taxa: 1 });
+
+    let melhorDesempenho = data.reduce((max, item) => {
+        let taxa = (item.Itens_Separados / item.Total_Itens);
+        return taxa > max.taxa ? { nome: item.Origem, taxa: taxa } : max;
+    }, { nome: '', taxa: 0 });
+
+    const insightsHTML = `
+        <h4 style="margin-bottom: 15px; color: var(--warning);">📋 Insights e Ações</h4>
+        <p style="margin-bottom: 10px;">• Taxa de separação mais alta: <span class="highlight">${melhorDesempenho.nome} (${(melhorDesempenho.taxa * 100).toFixed(0)}%)</span>.</p>
+        <p>• Prioridade de atendimento: <span class="highlight">${prioridade.nome}</span> (apenas ${(prioridade.taxa * 100).toFixed(0)}% separados).</p>
+    `;
+    insightsContainer.innerHTML = insightsHTML;
+}
     
     function renderCharts(data) {
         const labels = data.map(item => item.Origem);
@@ -336,6 +336,7 @@ async function carregarDashboard() {
 </body>
 
 </html>
+
 
 
 
