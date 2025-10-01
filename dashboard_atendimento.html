@@ -123,65 +123,63 @@
     document.addEventListener('DOMContentLoaded', function() {
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7PeDpAFV4QJHLfzUMWs7q6UOw_hqlAV3QmewzRxend4y6H28cSxw70Nqx7Pdxq1doyg/exec?t=" + Date.now();
 
-    async function carregarDashboard() {
-        try {
-            console.log("🚀 Iniciando carregamento do dashboard...");
-            
-            // Mostrar loading
-            document.getElementById('tabela-dados').innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px; color: var(--warning);">Carregando dados...</td></tr>';
-            
-            const response = await fetch(SCRIPT_URL);
-            console.log("✅ Resposta recebida, status:", response.status);
-            
-            if (!response.ok) {
-                throw new Error(`Erro HTTP: ${response.status}`);
-            }
-            
-            const jsonData = await response.json();
-            console.log("📦 Dados brutos recebidos:", jsonData);
-            
-            // Verificar estrutura dos dados
-            if (!jsonData.dadosOrigem) {
-                console.error("❌ Estrutura inesperada - não encontrou 'dadosOrigem'");
-                console.log("Estrutura atual:", Object.keys(jsonData));
-                throw new Error('Estrutura de dados inválida - campo "dadosOrigem" não encontrado');
-            }
-            
-            const data = jsonData.dadosOrigem;
-            console.log("🎯 Dados de origem:", data);
-            
-            if (!data || data.length === 0) {
-                throw new Error('Nenhum dado encontrado na planilha');
-            }
-            
-            // Calcular totais
-            const totais = {
-                faltantes: data.reduce((sum, item) => sum + (Number(item.Itens_Faltantes) || 0), 0),
-                separados: data.reduce((sum, item) => sum + (Number(item.Itens_Separados) || 0), 0),
-                geral: data.reduce((sum, item) => sum + (Number(item.Total_Itens) || 0), 0)
-            };
-
-            console.log("🧮 Totais calculados:", totais);
-
-            // Renderizar tudo
-            renderTabela(data, totais);
-            updateKPIs(totais);
-            renderProgressBars(data);
-            updateInsights(data);
-            renderCharts(data);
-            
-            console.log("🎉 Dashboard carregado com sucesso!");
-
-        } catch (error) {
-            console.error("💥 Erro crítico:", error);
-            document.getElementById('tabela-dados').innerHTML = 
-                `<tr><td colspan="4" style="color: var(--danger); text-align: center; padding: 20px;">
-                    <strong>Erro ao carregar dados:</strong><br>
-                    ${error.message}<br><br>
-                    <small>Verifique o console (F12) para detalhes</small>
-                </td></tr>`;
+async function carregarDashboard() {
+    try {
+        console.log("🚀 Iniciando carregamento do dashboard...");
+        
+        // Mostrar loading
+        document.getElementById('tabela-dados').innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px; color: var(--warning);">Carregando dados...</td></tr>';
+        
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7PeDpAFV4QJHLfzUMWs7q6UOw_hqlAV3QmewzRxend4y6H28cSxw70Nqx7Pdxq1doyg/exec?t=" + Date.now();
+        const response = await fetch(SCRIPT_URL);
+        console.log("✅ Resposta recebida, status:", response.status);
+        
+        if (!response.ok) {
+            throw new Error(`Erro HTTP: ${response.status}`);
         }
+        
+        const data = await response.json();
+        console.log("📦 Dados recebidos (array direto):", data);
+        
+        // CORREÇÃO: O dados já vêm como array, não precisa de .dadosOrigem
+        if (!data || data.length === 0) {
+            throw new Error('Nenhum dado encontrado na planilha');
+        }
+        
+        // Verificar se é um array de objetos com a estrutura esperada
+        if (!data[0].Origem) {
+            console.log("Estrutura do primeiro item:", data[0]);
+            throw new Error('Estrutura de dados inesperada');
+        }
+        
+        // Calcular totais
+        const totais = {
+            faltantes: data.reduce((sum, item) => sum + (Number(item.Itens_Faltantes) || 0), 0),
+            separados: data.reduce((sum, item) => sum + (Number(item.Itens_Separados) || 0), 0),
+            geral: data.reduce((sum, item) => sum + (Number(item.Total_Itens) || 0), 0)
+        };
+
+        console.log("🧮 Totais calculados:", totais);
+
+        // Renderizar tudo
+        renderTabela(data, totais);
+        updateKPIs(totais);
+        renderProgressBars(data);
+        updateInsights(data);
+        renderCharts(data);
+        
+        console.log("🎉 Dashboard carregado com sucesso!");
+
+    } catch (error) {
+        console.error("💥 Erro crítico:", error);
+        document.getElementById('tabela-dados').innerHTML = 
+            `<tr><td colspan="4" style="color: var(--danger); text-align: center; padding: 20px;">
+                <strong>Erro ao carregar dados:</strong><br>
+                ${error.message}<br><br>
+                <small>Verifique o console (F12) para detalhes</small>
+            </td></tr>`;
     }
+}
 
     function renderTabela(data, totais) {
         const tabelaCorpo = document.getElementById('tabela-dados');
@@ -338,6 +336,7 @@
 </body>
 
 </html>
+
 
 
 
