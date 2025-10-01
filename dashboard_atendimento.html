@@ -180,26 +180,27 @@
         }
 
         function renderProgressBars(data) {
-            const container = document.getElementById('progress-container');
-            container.innerHTML = '';
-            data.forEach(item => {
-                const percentual = (item.Itens_Separados / item.Total_Itens) * 100;
-                const origemID = item.Origem.toLowerCase().replace(/ç/g, 'c').replace(/ã/g, 'a');
-                const progressBarHTML = `
-                    <div class="progress-item" style="margin-bottom: 15px;">
-                        <div class="progress-title">${item.Origem}</div>
-                        <div class="progress-bar">
-                            <div class="progress-fill progress-${origemID}" style="width: ${percentual.toFixed(0)}%;"></div>
-                        </div>
-                        <div class="progress-info">
-                            <span>${item.Itens_Separados}/${item.Total_Itens} itens</span>
-                            <span>${percentual.toFixed(0)}%</span>
-                        </div>
-                    </div>
-                `;
-                container.innerHTML += progressBarHTML;
-            });
-        }
+    const container = document.getElementById('progress-container');
+    container.innerHTML = '';
+    data.forEach(item => {
+        // CORREÇÃO: Garantir que o cálculo seja preciso
+        const percentual = (item.Itens_Separados / item.Total_Itens) * 100;
+        const origemID = item.Origem.toLowerCase().replace(/ç/g, 'c').replace(/ã/g, 'a');
+        const progressBarHTML = `
+            <div class="progress-item" style="margin-bottom: 15px;">
+                <div class="progress-title">${item.Origem}</div>
+                <div class="progress-bar">
+                    <div class="progress-fill progress-${origemID}" style="width: ${percentual.toFixed(0)}%;"></div>
+                </div>
+                <div class="progress-info">
+                    <span>${item.Itens_Separados}/${item.Total_Itens} itens</span>
+                    <span>${percentual.toFixed(1)}%</span> <!-- Mudei para 1 casa decimal -->
+                </div>
+            </div>
+        `;
+        container.innerHTML += progressBarHTML;
+    });
+}
 
         function updateInsights(data) {
             const insightsContainer = document.getElementById('insights-container');
@@ -254,3 +255,4 @@
 </body>
 
 </html>
+
