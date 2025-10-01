@@ -126,21 +126,34 @@
 
         async function carregarDashboard() {
     try {
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7PeDpAFV4QJHLfzUMWs7q6UOw_hqlAV3QmewzRxend4y6H28cSxw70Nqx7Pdxq1doyg/exec?t=" + Date.now();
+        
+        console.log("🔍 Fazendo requisição para:", SCRIPT_URL);
         const response = await fetch(SCRIPT_URL);
+        console.log("📡 Status da resposta:", response.status);
+        
         if (!response.ok) throw new Error('Erro na rede ao buscar dados.');
         
-        const data = await response.json();
-        console.log("Dados recebidos:", data); // Para debug
+        const jsonData = await response.json();
+        console.log("📊 Dados COMPLETOS recebidos:", jsonData);
         
-        // CORREÇÃO: Calcular totais baseado nos dados reais
+        // CORREÇÃO: Pegar apenas a parte "dadosOrigem" do JSON
+        const data = jsonData.dadosOrigem;
+        console.log("🎯 Dados de Origem (usados no dashboard):", data);
+        
+        if (!data || data.length === 0) {
+            throw new Error('Nenhum dado de origem encontrado');
+        }
+        
+        // Calcular totais
         const totais = {
             faltantes: data.reduce((sum, item) => sum + (item.Itens_Faltantes || 0), 0),
             separados: data.reduce((sum, item) => sum + (item.Itens_Separados || 0), 0),
             geral: data.reduce((sum, item) => sum + (item.Total_Itens || 0), 0)
         };
 
-        console.log("Totais calculados:", totais); // Para debug
-        
+        console.log("🧮 Totais calculados:", totais);
+
         renderTabela(data, totais);
         updateKPIs(totais);
         renderProgressBars(data);
@@ -148,8 +161,12 @@
         renderCharts(data);
 
     } catch (error) {
-        console.error("Falha ao carregar o dashboard:", error);
-        document.body.innerHTML = `<div style="text-align: center; padding: 50px; color: #ef4444;"><h1>Erro ao Carregar Dados</h1><p>${error.message}</p><p>Verifique a URL do Script e as permissões da planilha.</p></div>`;
+        console.error("❌ Falha ao carregar o dashboard:", error);
+        document.getElementById('tabela-dados').innerHTML = 
+            `<tr><td colspan="4" style="color: var(--danger); text-align: center; padding: 20px;">
+                Erro: ${error.message}<br>
+                Verifique o console (F12) para detalhes
+            </td></tr>`;
     }
 }
 
@@ -259,5 +276,6 @@
 </body>
 
 </html>
+
 
 
