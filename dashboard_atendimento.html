@@ -121,161 +121,224 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // COLE A URL DO SEU SCRIPT DO GOOGLE AQUI
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7PeDpAFV4QJHLfzUMWs7q6UOw_hqlAV3QmewzRxend4y6H28cSxw70Nqx7Pdxq1doyg/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7PeDpAFV4QJHLfzUMWs7q6UOw_hqlAV3QmewzRxend4y6H28cSxw70Nqx7Pdxq1doyg/exec?t=" + Date.now();
 
-        async function carregarDashboard() {
-    try {
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7PeDpAFV4QJHLfzUMWs7q6UOw_hqlAV3QmewzRxend4y6H28cSxw70Nqx7Pdxq1doyg/exec?t=" + Date.now();
-        
-        console.log("🔍 Fazendo requisição para:", SCRIPT_URL);
-        const response = await fetch(SCRIPT_URL);
-        console.log("📡 Status da resposta:", response.status);
-        
-        if (!response.ok) throw new Error('Erro na rede ao buscar dados.');
-        
-        const jsonData = await response.json();
-        console.log("📊 Dados COMPLETOS recebidos:", jsonData);
-        
-        // CORREÇÃO: Pegar apenas a parte "dadosOrigem" do JSON
-        const data = jsonData.dadosOrigem;
-        console.log("🎯 Dados de Origem (usados no dashboard):", data);
-        
-        if (!data || data.length === 0) {
-            throw new Error('Nenhum dado de origem encontrado');
-        }
-        
-        // Calcular totais
-        const totais = {
-            faltantes: data.reduce((sum, item) => sum + (item.Itens_Faltantes || 0), 0),
-            separados: data.reduce((sum, item) => sum + (item.Itens_Separados || 0), 0),
-            geral: data.reduce((sum, item) => sum + (item.Total_Itens || 0), 0)
-        };
-
-        console.log("🧮 Totais calculados:", totais);
-
-        renderTabela(data, totais);
-        updateKPIs(totais);
-        renderProgressBars(data);
-        updateInsights(data);
-        renderCharts(data);
-
-    } catch (error) {
-        console.error("❌ Falha ao carregar o dashboard:", error);
-        document.getElementById('tabela-dados').innerHTML = 
-            `<tr><td colspan="4" style="color: var(--danger); text-align: center; padding: 20px;">
-                Erro: ${error.message}<br>
-                Verifique o console (F12) para detalhes
-            </td></tr>`;
-    }
-}
-
-        function renderTabela(data, totais) {
-            const tabelaCorpo = document.getElementById('tabela-dados');
-            tabelaCorpo.innerHTML = '';
+    async function carregarDashboard() {
+        try {
+            console.log("🚀 Iniciando carregamento do dashboard...");
             
-            data.forEach(item => {
-                const classeOrigem = `origem-${item.Origem.toLowerCase().replace(/ç/g, 'c').replace(/ã/g, 'a')}`;
-                const row = `
-                    <tr class="${classeOrigem}">
-                        <td style="text-align: left; font-weight: 600;">${item.Origem}</td>
-                        <td>${item.Itens_Faltantes}</td>
-                        <td>${item.Itens_Separados}</td>
-                        <td>${item.Total_Itens}</td>
-                    </tr>
-                `;
-                tabelaCorpo.innerHTML += row;
-            });
+            // Mostrar loading
+            document.getElementById('tabela-dados').innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px; color: var(--warning);">Carregando dados...</td></tr>';
+            
+            const response = await fetch(SCRIPT_URL);
+            console.log("✅ Resposta recebida, status:", response.status);
+            
+            if (!response.ok) {
+                throw new Error(`Erro HTTP: ${response.status}`);
+            }
+            
+            const jsonData = await response.json();
+            console.log("📦 Dados brutos recebidos:", jsonData);
+            
+            // Verificar estrutura dos dados
+            if (!jsonData.dadosOrigem) {
+                console.error("❌ Estrutura inesperada - não encontrou 'dadosOrigem'");
+                console.log("Estrutura atual:", Object.keys(jsonData));
+                throw new Error('Estrutura de dados inválida - campo "dadosOrigem" não encontrado');
+            }
+            
+            const data = jsonData.dadosOrigem;
+            console.log("🎯 Dados de origem:", data);
+            
+            if (!data || data.length === 0) {
+                throw new Error('Nenhum dado encontrado na planilha');
+            }
+            
+            // Calcular totais
+            const totais = {
+                faltantes: data.reduce((sum, item) => sum + (Number(item.Itens_Faltantes) || 0), 0),
+                separados: data.reduce((sum, item) => sum + (Number(item.Itens_Separados) || 0), 0),
+                geral: data.reduce((sum, item) => sum + (Number(item.Total_Itens) || 0), 0)
+            };
 
-            document.getElementById('total-faltantes').textContent = totais.faltantes;
-            document.getElementById('total-separados').textContent = totais.separados;
-            document.getElementById('total-geral').textContent = totais.geral;
+            console.log("🧮 Totais calculados:", totais);
+
+            // Renderizar tudo
+            renderTabela(data, totais);
+            updateKPIs(totais);
+            renderProgressBars(data);
+            updateInsights(data);
+            renderCharts(data);
+            
+            console.log("🎉 Dashboard carregado com sucesso!");
+
+        } catch (error) {
+            console.error("💥 Erro crítico:", error);
+            document.getElementById('tabela-dados').innerHTML = 
+                `<tr><td colspan="4" style="color: var(--danger); text-align: center; padding: 20px;">
+                    <strong>Erro ao carregar dados:</strong><br>
+                    ${error.message}<br><br>
+                    <small>Verifique o console (F12) para detalhes</small>
+                </td></tr>`;
         }
+    }
 
-        function updateKPIs(totais) {
-            document.getElementById('kpi-faltantes-valor').textContent = totais.faltantes;
-            document.getElementById('kpi-faltantes-percent').textContent = `${((totais.faltantes / totais.geral) * 100).toFixed(0)}% do total`;
-            document.getElementById('kpi-separados-valor').textContent = totais.separados;
-            document.getElementById('kpi-separados-percent').textContent = `${((totais.separados / totais.geral) * 100).toFixed(0)}% do total`;
-            document.getElementById('kpi-total-valor').textContent = totais.geral;
-        }
-
-        function renderProgressBars(data) {
-    const container = document.getElementById('progress-container');
-    container.innerHTML = '';
-    data.forEach(item => {
-        // CORREÇÃO: Garantir que o cálculo seja preciso
-        const percentual = (item.Itens_Separados / item.Total_Itens) * 100;
-        const origemID = item.Origem.toLowerCase().replace(/ç/g, 'c').replace(/ã/g, 'a');
-        const progressBarHTML = `
-            <div class="progress-item" style="margin-bottom: 15px;">
-                <div class="progress-title">${item.Origem}</div>
-                <div class="progress-bar">
-                    <div class="progress-fill progress-${origemID}" style="width: ${percentual.toFixed(0)}%;"></div>
-                </div>
-                <div class="progress-info">
-                    <span>${item.Itens_Separados}/${item.Total_Itens} itens</span>
-                    <span>${percentual.toFixed(1)}%</span> <!-- Mudei para 1 casa decimal -->
-                </div>
-            </div>
-        `;
-        container.innerHTML += progressBarHTML;
-    });
-}
-
-        function updateInsights(data) {
-            const insightsContainer = document.getElementById('insights-container');
-            let prioridade = data.reduce((min, item) => {
-                let taxa = (item.Itens_Separados / item.Total_Itens);
-                return taxa < min.taxa ? { nome: item.Origem, taxa: taxa } : min;
-            }, { nome: '', taxa: 1 });
-
-            let melhorDesempenho = data.reduce((max, item) => {
-                let taxa = (item.Itens_Separados / item.Total_Itens);
-                return taxa > max.taxa ? { nome: item.Origem, taxa: taxa } : max;
-            }, { nome: '', taxa: 0 });
-
-            const insightsHTML = `
-                <h4 style="margin-bottom: 15px; color: var(--warning);">📋 Insights e Ações</h4>
-                <p>• Taxa de separação mais alta: <span class="highlight">${melhorDesempenho.nome} (${(melhorDesempenho.taxa * 100).toFixed(0)}%)</span>.</p>
-                <p>• Prioridade de atendimento: <span class="highlight">${prioridade.nome}</span> (apenas ${(prioridade.taxa * 100).toFixed(0)}% separados).</p>
-            `;
-            insightsContainer.innerHTML = insightsHTML;
-        }
+    function renderTabela(data, totais) {
+        const tabelaCorpo = document.getElementById('tabela-dados');
+        tabelaCorpo.innerHTML = '';
         
-        function renderCharts(data) {
-            const labels = data.map(item => item.Origem);
-            const totaisPorOrigem = data.map(item => item.Total_Itens);
-            const faltantesPorOrigem = data.map(item => item.Itens_Faltantes);
-            const separadosPorOrigem = data.map(item => item.Itens_Separados);
+        data.forEach(item => {
+            const classeOrigem = `origem-${item.Origem.toLowerCase().replace(/ç/g, 'c').replace(/ã/g, 'a')}`;
+            const row = `
+                <tr class="${classeOrigem}">
+                    <td style="text-align: left; font-weight: 600;">${item.Origem}</td>
+                    <td>${item.Itens_Faltantes}</td>
+                    <td>${item.Itens_Separados}</td>
+                    <td>${item.Total_Itens}</td>
+                </tr>
+            `;
+            tabelaCorpo.innerHTML += row;
+        });
 
+        document.getElementById('total-faltantes').textContent = totais.faltantes;
+        document.getElementById('total-separados').textContent = totais.separados;
+        document.getElementById('total-geral').textContent = totais.geral;
+    }
+
+    function updateKPIs(totais) {
+        document.getElementById('kpi-faltantes-valor').textContent = totais.faltantes;
+        document.getElementById('kpi-faltantes-percent').textContent = `${((totais.faltantes / totais.geral) * 100).toFixed(0)}% do total`;
+        document.getElementById('kpi-separados-valor').textContent = totais.separados;
+        document.getElementById('kpi-separados-percent').textContent = `${((totais.separados / totais.geral) * 100).toFixed(0)}% do total`;
+        document.getElementById('kpi-total-valor').textContent = totais.geral;
+    }
+
+    function renderProgressBars(data) {
+        const container = document.getElementById('progress-container');
+        container.innerHTML = '';
+        data.forEach(item => {
+            const percentual = (item.Itens_Separados / item.Total_Itens) * 100;
+            const origemID = item.Origem.toLowerCase().replace(/ç/g, 'c').replace(/ã/g, 'a');
+            const progressBarHTML = `
+                <div class="progress-item" style="margin-bottom: 15px;">
+                    <div class="progress-title">${item.Origem}</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill progress-${origemID}" style="width: ${percentual.toFixed(0)}%;"></div>
+                    </div>
+                    <div class="progress-info">
+                        <span>${item.Itens_Separados}/${item.Total_Itens} itens</span>
+                        <span>${percentual.toFixed(1)}%</span>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += progressBarHTML;
+        });
+    }
+
+    function updateInsights(data) {
+        const insightsContainer = document.getElementById('insights-container');
+        let prioridade = data.reduce((min, item) => {
+            let taxa = (item.Itens_Separados / item.Total_Itens);
+            return taxa < min.taxa ? { nome: item.Origem, taxa: taxa } : min;
+        }, { nome: '', taxa: 1 });
+
+        let melhorDesempenho = data.reduce((max, item) => {
+            let taxa = (item.Itens_Separados / item.Total_Itens);
+            return taxa > max.taxa ? { nome: item.Origem, taxa: taxa } : max;
+        }, { nome: '', taxa: 0 });
+
+        const insightsHTML = `
+            <h4 style="margin-bottom: 15px; color: var(--warning);">📋 Insights e Ações</h4>
+            <p>• Taxa de separação mais alta: <span class="highlight">${melhorDesempenho.nome} (${(melhorDesempenho.taxa * 100).toFixed(0)}%)</span>.</p>
+            <p>• Prioridade de atendimento: <span class="highlight">${prioridade.nome}</span> (apenas ${(prioridade.taxa * 100).toFixed(0)}% separados).</p>
+        `;
+        insightsContainer.innerHTML = insightsHTML;
+    }
+    
+    function renderCharts(data) {
+        const labels = data.map(item => item.Origem);
+        const totaisPorOrigem = data.map(item => item.Total_Itens);
+        const faltantesPorOrigem = data.map(item => item.Itens_Faltantes);
+        const separadosPorOrigem = data.map(item => item.Itens_Separados);
+
+        // Gráfico de pizza
+        if (document.getElementById('origemChart')) {
             new Chart(document.getElementById('origemChart').getContext('2d'), {
                 type: 'doughnut',
                 data: {
                     labels: labels,
-                    datasets: [{ data: totaisPorOrigem, backgroundColor: ['#3b82f6', '#10b981', '#f59e0b'], borderColor: '#1e293b', borderWidth: 4 }]
+                    datasets: [{ 
+                        data: totaisPorOrigem, 
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b'], 
+                        borderColor: '#1e293b', 
+                        borderWidth: 4 
+                    }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { color: '#f8fafc' } } } }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { 
+                            display: true, 
+                            position: 'bottom', 
+                            labels: { color: '#f8fafc' } 
+                        } 
+                    } 
+                }
             });
+        }
 
+        // Gráfico de barras
+        if (document.getElementById('statusChart')) {
             new Chart(document.getElementById('statusChart').getContext('2d'), {
                 type: 'bar',
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'Itens Faltantes', data: faltantesPorOrigem, backgroundColor: '#ef4444' },
-                        { label: 'Itens Separados', data: separadosPorOrigem, backgroundColor: '#10b981' }
+                        { 
+                            label: 'Itens Faltantes', 
+                            data: faltantesPorOrigem, 
+                            backgroundColor: '#ef4444' 
+                        },
+                        { 
+                            label: 'Itens Separados', 
+                            data: separadosPorOrigem, 
+                            backgroundColor: '#10b981' 
+                        }
                     ]
                 },
-                options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(255,255,255,0.1)' } }, y: { beginAtZero: true, ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(255,255,255,0.1)' } } }, plugins: { legend: { labels: { color: '#f8fafc' } } } }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        x: { 
+                            ticks: { color: '#cbd5e1' }, 
+                            grid: { color: 'rgba(255,255,255,0.1)' } 
+                        }, 
+                        y: { 
+                            beginAtZero: true, 
+                            ticks: { color: '#cbd5e1' }, 
+                            grid: { color: 'rgba(255,255,255,0.1)' } 
+                        } 
+                    }, 
+                    plugins: { 
+                        legend: { 
+                            labels: { color: '#f8fafc' } 
+                        } 
+                    } 
+                }
             });
         }
-        carregarDashboard();
-    });
+    }
+
+    // Iniciar
+    carregarDashboard();
+})
     </script>
 </body>
 
 </html>
+
 
 
 
