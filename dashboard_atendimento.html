@@ -125,29 +125,33 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7PeDpAFV4QJHLfzUMWs7q6UOw_hqlAV3QmewzRxend4y6H28cSxw70Nqx7Pdxq1doyg/exec";
 
         async function carregarDashboard() {
-            try {
-                const response = await fetch(SCRIPT_URL);
-                if (!response.ok) throw new Error('Erro na rede ao buscar dados.');
-                
-                const data = await response.json();
-                
-                const totais = {
-                    faltantes: data.reduce((sum, item) => sum + item.Itens_Faltantes, 0),
-                    separados: data.reduce((sum, item) => sum + item.Itens_Separados, 0),
-                    geral: data.reduce((sum, item) => sum + item.Total_Itens, 0)
-                };
+    try {
+        const response = await fetch(SCRIPT_URL);
+        if (!response.ok) throw new Error('Erro na rede ao buscar dados.');
+        
+        const data = await response.json();
+        console.log("Dados recebidos:", data); // Para debug
+        
+        // CORREÇÃO: Calcular totais baseado nos dados reais
+        const totais = {
+            faltantes: data.reduce((sum, item) => sum + (item.Itens_Faltantes || 0), 0),
+            separados: data.reduce((sum, item) => sum + (item.Itens_Separados || 0), 0),
+            geral: data.reduce((sum, item) => sum + (item.Total_Itens || 0), 0)
+        };
 
-                renderTabela(data, totais);
-                updateKPIs(totais);
-                renderProgressBars(data);
-                updateInsights(data);
-                renderCharts(data);
+        console.log("Totais calculados:", totais); // Para debug
+        
+        renderTabela(data, totais);
+        updateKPIs(totais);
+        renderProgressBars(data);
+        updateInsights(data);
+        renderCharts(data);
 
-            } catch (error) {
-                console.error("Falha ao carregar o dashboard:", error);
-                document.body.innerHTML = `<div style="text-align: center; padding: 50px; color: #ef4444;"><h1>Erro ao Carregar Dados</h1><p>${error.message}</p><p>Verifique a URL do Script e as permissões da planilha.</p></div>`;
-            }
-        }
+    } catch (error) {
+        console.error("Falha ao carregar o dashboard:", error);
+        document.body.innerHTML = `<div style="text-align: center; padding: 50px; color: #ef4444;"><h1>Erro ao Carregar Dados</h1><p>${error.message}</p><p>Verifique a URL do Script e as permissões da planilha.</p></div>`;
+    }
+}
 
         function renderTabela(data, totais) {
             const tabelaCorpo = document.getElementById('tabela-dados');
@@ -255,4 +259,5 @@
 </body>
 
 </html>
+
 
