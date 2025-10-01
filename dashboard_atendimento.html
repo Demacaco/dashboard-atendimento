@@ -160,19 +160,18 @@
                 }
                 
                 const jsonData = await response.json();
-                console.log("📦 Dados recebidos:", jsonData);
+                console.log("📦 Dados COMPLETOS recebidos:", jsonData);
                 
-                // Separar dados de origem e marcas
-                const data = jsonData.dadosOrigem || jsonData;
-                const dadosMarcas = jsonData.dadosMarca || [];
-                
-                if (!data || data.length === 0) {
-                    throw new Error('Nenhum dado encontrado na planilha');
+                // Verificar se há erro
+                if (jsonData.error) {
+                    throw new Error(`Erro no script: ${jsonData.error}`);
                 }
                 
-                if (!data[0].Origem) {
-                    console.log("Estrutura do primeiro item:", data[0]);
-                    throw new Error('Estrutura de dados inesperada');
+                const data = jsonData.dadosOrigem || [];
+                const dadosMarcas = jsonData.dadosMarca || [];
+                
+                if (data.length === 0) {
+                    throw new Error('Nenhum dado de origem encontrado');
                 }
                 
                 // Calcular totais
@@ -183,6 +182,7 @@
                 };
 
                 console.log("🧮 Totais calculados:", totais);
+                console.log("🏷️ Dados de marcas:", dadosMarcas);
 
                 // Renderizar tudo
                 renderTabela(data, totais);
@@ -390,7 +390,8 @@
             dadosMarcas.sort((a, b) => b.Total_Itens - a.Total_Itens);
 
             dadosMarcas.forEach((marca, index) => {
-                const porcentagem = ((marca.Total_Itens / dadosMarcas.reduce((sum, m) => sum + m.Total_Itens, 0)) * 100).toFixed(1);
+                const totalGeral = dadosMarcas.reduce((sum, m) => sum + m.Total_Itens, 0);
+                const porcentagem = ((marca.Total_Itens / totalGeral) * 100).toFixed(1);
                 
                 const marcaHTML = `
                     <div class="marca-card">
