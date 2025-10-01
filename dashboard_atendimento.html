@@ -39,6 +39,11 @@
         .chart-title { font-size: 1.3rem; margin-bottom: 20px; text-align: center; background: linear-gradient(90deg, var(--accent), var(--verde-claro)); -webkit-background-clip: text; background-clip: text; color: transparent; }
         .chart-container { height: 300px; position: relative; }
         .highlight { background: linear-gradient(45deg, var(--accent), var(--verde-claro)); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 600; }
+        .timeline { margin-top: 20px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 12px; }
+        .timeline-item { display: flex; justify-content: space-between; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .marca-card { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 10px; }
+        .marca-header { display: flex; align-items: center; margin-bottom: 10px; }
+        .marca-icon { width: 30px; height: 30px; margin-right: 10px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
         @media (max-width: 1024px) { .dashboard { grid-template-columns: 1fr; } }
         @media (max-width: 768px) { .charts-container { grid-template-columns: 1fr; } }
     </style>
@@ -105,12 +110,35 @@
         
         <div class="charts-container">
             <div class="chart-card">
-                <h3 class="chart-title">Distribuição por Origem do Estoque</h3>
-                <div class="chart-container"><canvas id="origemChart"></canvas></div>
+                <h3 class="chart-title">Distribuição por Marcas</h3>
+                <div class="chart-container"><canvas id="marcasChart"></canvas></div>
             </div>
             <div class="chart-card">
-                <h3 class="chart-title">Status dos Itens (Faltantes vs. Separados)</h3>
-                <div class="chart-container"><canvas id="statusChart"></canvas></div>
+                <h3 class="chart-title">Timeline do Atendimento</h3>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <span>📅 Início do atendimento:</span>
+                        <span id="data-inicio" style="font-weight: 600;">15/01/2024</span>
+                    </div>
+                    <div class="timeline-item">
+                        <span>⏱️ Duração:</span>
+                        <span id="duracao" style="font-weight: 600;">12 dias</span>
+                    </div>
+                    <div class="timeline-item">
+                        <span>🎯 Previsão de conclusão:</span>
+                        <span id="previsao-conclusao" style="font-weight: 600;">27/01/2024</span>
+                    </div>
+                    <div class="timeline-item">
+                        <span>⚡ Velocidade média:</span>
+                        <span id="velocidade-media" style="font-weight: 600;">18 itens/dia</span>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <h4 style="margin-bottom: 15px; color: var(--warning);">📊 Detalhes por Marca</h4>
+                    <div id="detalhes-marcas">
+                        <!-- Detalhes das marcas serão inseridos aqui -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -131,8 +159,12 @@
                     throw new Error(`Erro HTTP: ${response.status}`);
                 }
                 
-                const data = await response.json();
-                console.log("📦 Dados recebidos:", data);
+                const jsonData = await response.json();
+                console.log("📦 Dados recebidos:", jsonData);
+                
+                // Separar dados de origem e marcas
+                const data = jsonData.dadosOrigem || jsonData;
+                const dadosMarcas = jsonData.dadosMarca || [];
                 
                 if (!data || data.length === 0) {
                     throw new Error('Nenhum dado encontrado na planilha');
@@ -157,7 +189,9 @@
                 updateKPIs(totais);
                 renderProgressBars(data);
                 updateInsights(data);
-                renderCharts(data);
+                renderMarcasChart(dadosMarcas);
+                updateTimeline(totais);
+                renderDetalhesMarcas(dadosMarcas);
                 
                 console.log("🎉 Dashboard carregado com sucesso!");
 
@@ -205,11 +239,10 @@
             const container = document.getElementById('progress-container');
             container.innerHTML = '';
             
-            // NOVAS CORES para barras de progresso
             const coresProgresso = {
-                'a4': '#FF6B6B',        // Vermelho
-                'concessionarias': '#4ECDC4', // Verde água
-                'garantias': '#45B7D1'       // Azul claro
+                'a4': '#FF6B6B',
+                'concessionarias': '#4ECDC4',
+                'garantias': '#45B7D1'
             };
             
             data.forEach(item => {
@@ -253,95 +286,129 @@
             insightsContainer.innerHTML = insightsHTML;
         }
         
-        function renderCharts(data) {
-            const labels = data.map(item => item.Origem);
-            const totaisPorOrigem = data.map(item => item.Total_Itens);
-            const faltantesPorOrigem = data.map(item => item.Itens_Faltantes);
-            const separadosPorOrigem = data.map(item => item.Itens_Separados);
-
-            // NOVAS CORES
-            const coresNovas = ['#FF6B6B', '#4ECDC4', '#45B7D1'];
-            const coresFaltantes = '#FF9E7D';
-            const coresSeparados = '#6DCF8F';
-
-            // Destruir gráficos existentes se houver
-            if (window.origemChartInstance) {
-                window.origemChartInstance.destroy();
-            }
-            if (window.statusChartInstance) {
-                window.statusChartInstance.destroy();
+        function renderMarcasChart(dadosMarcas) {
+            if (!dadosMarcas || dadosMarcas.length === 0) {
+                console.log("❌ Nenhum dado de marcas encontrado");
+                document.getElementById('marcasChart').parentElement.innerHTML = `
+                    <h3 class="chart-title">Distribuição por Marcas</h3>
+                    <div style="text-align: center; padding: 50px; color: var(--text-secondary);">
+                        Dados de marcas não disponíveis
+                    </div>
+                `;
+                return;
             }
 
-            // Gráfico de pizza
-            if (document.getElementById('origemChart')) {
-                const ctx1 = document.getElementById('origemChart').getContext('2d');
-                window.origemChartInstance = new Chart(ctx1, {
-                    type: 'doughnut',
+            const labels = dadosMarcas.map(item => item.Marca);
+            const valores = dadosMarcas.map(item => item.Total_Itens);
+
+            // Cores para as marcas
+            const coresMarcas = [
+                '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFD166', '#06D6A0',
+                '#118AB2', '#EF476F', '#073B4C', '#7209B7', '#F72585'
+            ];
+
+            if (window.marcasChartInstance) {
+                window.marcasChartInstance.destroy();
+            }
+
+            if (document.getElementById('marcasChart')) {
+                const ctx = document.getElementById('marcasChart').getContext('2d');
+                window.marcasChartInstance = new Chart(ctx, {
+                    type: 'bar',
                     data: {
                         labels: labels,
                         datasets: [{ 
-                            data: totaisPorOrigem, 
-                            backgroundColor: coresNovas, 
-                            borderColor: '#1e293b', 
-                            borderWidth: 4
+                            label: 'Itens por Marca', 
+                            data: valores, 
+                            backgroundColor: coresMarcas,
+                            borderColor: '#1e293b',
+                            borderWidth: 2,
+                            borderRadius: 5
                         }]
                     },
                     options: { 
                         responsive: true, 
-                        maintainAspectRatio: false, 
-                        plugins: { 
-                            legend: { 
-                                display: true, 
-                                position: 'bottom', 
-                                labels: { color: '#f8fafc' } 
-                            } 
-                        } 
-                    }
-                });
-            }
-
-            // Gráfico de barras
-            if (document.getElementById('statusChart')) {
-                const ctx2 = document.getElementById('statusChart').getContext('2d');
-                window.statusChartInstance = new Chart(ctx2, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [
-                            { 
-                                label: 'Itens Faltantes', 
-                                data: faltantesPorOrigem, 
-                                backgroundColor: coresFaltantes
-                            },
-                            { 
-                                label: 'Itens Separados', 
-                                data: separadosPorOrigem, 
-                                backgroundColor: coresSeparados
-                            }
-                        ]
-                    },
-                    options: { 
-                        responsive: true, 
-                        maintainAspectRatio: false, 
+                        maintainAspectRatio: false,
+                        indexAxis: 'y', // Gráfico horizontal
                         scales: { 
                             x: { 
+                                beginAtZero: true,
                                 ticks: { color: '#cbd5e1' }, 
                                 grid: { color: 'rgba(255,255,255,0.1)' } 
                             }, 
                             y: { 
-                                beginAtZero: true, 
                                 ticks: { color: '#cbd5e1' }, 
                                 grid: { color: 'rgba(255,255,255,0.1)' } 
                             } 
                         }, 
                         plugins: { 
                             legend: { 
-                                labels: { color: '#f8fafc' } 
-                            } 
+                                display: false
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                                titleColor: '#f8fafc',
+                                bodyColor: '#f8fafc'
+                            }
                         } 
                     }
                 });
             }
+        }
+
+        function updateTimeline(totais) {
+            // Datas exemplo - você pode ajustar conforme necessário
+            const dataInicio = new Date('2024-01-15');
+            const hoje = new Date();
+            const diffTime = Math.abs(hoje - dataInicio);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            const velocidadeMedia = (totais.separados / diffDays).toFixed(1);
+            const previsaoConclusao = new Date(dataInicio);
+            previsaoConclusao.setDate(dataInicio.getDate() + Math.ceil(totais.geral / velocidadeMedia));
+
+            document.getElementById('data-inicio').textContent = dataInicio.toLocaleDateString('pt-BR');
+            document.getElementById('duracao').textContent = `${diffDays} dias`;
+            document.getElementById('previsao-conclusao').textContent = previsaoConclusao.toLocaleDateString('pt-BR');
+            document.getElementById('velocidade-media').textContent = `${velocidadeMedia} itens/dia`;
+        }
+
+        function renderDetalhesMarcas(dadosMarcas) {
+            if (!dadosMarcas || dadosMarcas.length === 0) {
+                document.getElementById('detalhes-marcas').innerHTML = `
+                    <div style="text-align: center; color: var(--text-secondary); padding: 20px;">
+                        Nenhum dado de marcas disponível
+                    </div>
+                `;
+                return;
+            }
+
+            const container = document.getElementById('detalhes-marcas');
+            container.innerHTML = '';
+
+            // Ordenar marcas por quantidade (maior primeiro)
+            dadosMarcas.sort((a, b) => b.Total_Itens - a.Total_Itens);
+
+            dadosMarcas.forEach((marca, index) => {
+                const porcentagem = ((marca.Total_Itens / dadosMarcas.reduce((sum, m) => sum + m.Total_Itens, 0)) * 100).toFixed(1);
+                
+                const marcaHTML = `
+                    <div class="marca-card">
+                        <div class="marca-header">
+                            <div class="marca-icon">${index + 1}</div>
+                            <strong style="flex: 1;">${marca.Marca}</strong>
+                            <span style="font-weight: 600; color: #4ECDC4;">${marca.Total_Itens} itens</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${porcentagem}%; background: #4ECDC4;"></div>
+                        </div>
+                        <div style="text-align: right; font-size: 0.8rem; color: var(--text-secondary); margin-top: 5px;">
+                            ${porcentagem}% do total
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += marcaHTML;
+            });
         }
 
         // Iniciar
