@@ -214,18 +214,28 @@ async function carregarDashboard() {
     function renderProgressBars(data) {
     const container = document.getElementById('progress-container');
     container.innerHTML = '';
+    
+    // NOVAS CORES para barras de progresso
+    const coresProgresso = {
+        'a4': '#FF6B6B',        // Vermelho
+        'concessionarias': '#4ECDC4', // Verde água
+        'garantias': '#45B7D1'       // Azul claro
+    };
+    
     data.forEach(item => {
         const percentual = (item.Itens_Separados / item.Total_Itens) * 100;
         const origemID = item.Origem.toLowerCase().replace(/ç/g, 'c').replace(/ã/g, 'a');
+        const cor = coresProgresso[origemID] || '#3b82f6';
+        
         const progressBarHTML = `
             <div class="progress-item" style="margin-bottom: 20px;">
-                <div class="progress-title" style="font-weight: 600; margin-bottom: 8px;">${item.Origem}</div>
+                <div class="progress-title" style="font-weight: 600; margin-bottom: 8px; color: ${cor}">${item.Origem}</div>
                 <div class="progress-bar">
-                    <div class="progress-fill progress-${origemID}" style="width: ${percentual.toFixed(0)}%;"></div>
+                    <div class="progress-fill" style="width: ${percentual.toFixed(0)}%; background: ${cor};"></div>
                 </div>
                 <div class="progress-info">
                     <span>${item.Itens_Separados}/${item.Total_Itens} itens</span>
-                    <span style="font-weight: 600;">${percentual.toFixed(1)}%</span>
+                    <span style="font-weight: 600; color: ${cor}">${percentual.toFixed(1)}%</span>
                 </div>
             </div>
         `;
@@ -254,37 +264,117 @@ async function carregarDashboard() {
 }
     
     function renderCharts(data) {
-        const labels = data.map(item => item.Origem);
-        const totaisPorOrigem = data.map(item => item.Total_Itens);
-        const faltantesPorOrigem = data.map(item => item.Itens_Faltantes);
-        const separadosPorOrigem = data.map(item => item.Itens_Separados);
+    const labels = data.map(item => item.Origem);
+    const totaisPorOrigem = data.map(item => item.Total_Itens);
+    const faltantesPorOrigem = data.map(item => item.Itens_Faltantes);
+    const separadosPorOrigem = data.map(item => item.Itens_Separados);
 
-        // Gráfico de pizza
-        if (document.getElementById('origemChart')) {
-            new Chart(document.getElementById('origemChart').getContext('2d'), {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{ 
-                        data: totaisPorOrigem, 
-                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b'], 
-                        borderColor: '#1e293b', 
-                        borderWidth: 4 
-                    }]
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    plugins: { 
-                        legend: { 
-                            display: true, 
-                            position: 'bottom', 
-                            labels: { color: '#f8fafc' } 
+    // NOVAS CORES - Esquema azul/verde/laranja
+    const coresNovas = ['#FF6B6B', '#4ECDC4', '#45B7D1']; // Vermelho, Verde água, Azul claro
+    const coresFaltantes = '#FF9E7D'; // Laranja claro
+    const coresSeparados = '#6DCF8F'; // Verde claro
+
+    // Destruir gráficos existentes se houver
+    if (window.origemChartInstance) {
+        window.origemChartInstance.destroy();
+    }
+    if (window.statusChartInstance) {
+        window.statusChartInstance.destroy();
+    }
+
+    // Gráfico de pizza - NOVAS CORES
+    if (document.getElementById('origemChart')) {
+        const ctx1 = document.getElementById('origemChart').getContext('2d');
+        window.origemChartInstance = new Chart(ctx1, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{ 
+                    data: totaisPorOrigem, 
+                    backgroundColor: coresNovas, 
+                    borderColor: '#1e293b', 
+                    borderWidth: 4,
+                    hoverBackgroundColor: ['#FF8E8E', '#7CECDF', '#67C7E0']
+                }]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { 
+                    legend: { 
+                        display: true, 
+                        position: 'bottom', 
+                        labels: { 
+                            color: '#f8fafc',
+                            font: { size: 12 },
+                            padding: 15
                         } 
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                        titleColor: '#f8fafc',
+                        bodyColor: '#f8fafc'
+                    }
+                },
+                cutout: '50%'
+            }
+        });
+    }
+
+    // Gráfico de barras - NOVAS CORES
+    if (document.getElementById('statusChart')) {
+        const ctx2 = document.getElementById('statusChart').getContext('2d');
+        window.statusChartInstance = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { 
+                        label: 'Itens Faltantes', 
+                        data: faltantesPorOrigem, 
+                        backgroundColor: coresFaltantes,
+                        borderColor: '#FF8E6B',
+                        borderWidth: 1,
+                        borderRadius: 5
+                    },
+                    { 
+                        label: 'Itens Separados', 
+                        data: separadosPorOrigem, 
+                        backgroundColor: coresSeparados,
+                        borderColor: '#5ACF87',
+                        borderWidth: 1,
+                        borderRadius: 5
+                    }
+                ]
+            },
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                scales: { 
+                    x: { 
+                        ticks: { color: '#cbd5e1' }, 
+                        grid: { color: 'rgba(255,255,255,0.1)' } 
+                    }, 
+                    y: { 
+                        beginAtZero: true, 
+                        ticks: { color: '#cbd5e1' }, 
+                        grid: { color: 'rgba(255,255,255,0.1)' } 
                     } 
-                }
-            });
-        }
+                }, 
+                plugins: { 
+                    legend: { 
+                        labels: { color: '#f8fafc' } 
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(30, 41, 59, 0.9)',
+                        titleColor: '#f8fafc',
+                        bodyColor: '#f8fafc'
+                    }
+                } 
+            }
+        });
+    }
+}
 
         // Gráfico de barras
         if (document.getElementById('statusChart')) {
@@ -336,6 +426,7 @@ async function carregarDashboard() {
 </body>
 
 </html>
+
 
 
 
