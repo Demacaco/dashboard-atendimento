@@ -35,15 +35,13 @@
         .progress-fill { height: 100%; border-radius: 5px; transition: width 1.5s ease-in-out; }
         .progress-info { display: flex; justify-content: space-between; color: var(--text-secondary); font-size: 0.9rem; }
         .charts-container { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 30px; }
-        .chart-card { background: var(--card-bg); border-radius: var(--border-radius); padding: 25px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); border-left: 4px solid; border-image: linear-gradient(45deg, var(--accent), var(--verde-claro)) 1; }
+        .chart-card { background: var(--card-bg); border-radius: var(--border-radius); padding: 25px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); border-left: 4px solid; border-image: linear-gradient(45deg, var(--accent), var(--verde-claro)) 1; height: 400px; display: flex; flex-direction: column; }
         .chart-title { font-size: 1.3rem; margin-bottom: 20px; text-align: center; background: linear-gradient(90deg, var(--accent), var(--verde-claro)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .chart-container { height: 300px; position: relative; }
+        .chart-container { height: 300px; position: relative; flex: 1; }
         .highlight { background: linear-gradient(45deg, var(--accent), var(--verde-claro)); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 600; }
-        .timeline { margin-top: 20px; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 12px; }
-        .timeline-item { display: flex; justify-content: space-between; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .marca-card { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 10px; }
-        .marca-header { display: flex; align-items: center; margin-bottom: 10px; }
-        .marca-icon { width: 30px; height: 30px; margin-right: 10px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .timeline { padding: 20px; background: rgba(255,255,255,0.05); border-radius: 12px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+        .timeline-item { display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .timeline-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
         @media (max-width: 1024px) { .dashboard { grid-template-columns: 1fr; } }
         @media (max-width: 768px) { .charts-container { grid-template-columns: 1fr; } }
     </style>
@@ -133,12 +131,6 @@
                         <span id="velocidade-media" style="font-weight: 600;">18 itens/dia</span>
                     </div>
                 </div>
-                <div style="margin-top: 20px;">
-                    <h4 style="margin-bottom: 15px; color: var(--warning);">📊 Detalhes por Marca</h4>
-                    <div id="detalhes-marcas">
-                        <!-- Detalhes das marcas serão inseridos aqui -->
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -193,7 +185,6 @@
                 updateInsights(data);
                 renderMarcasChart(dadosMarcas);
                 updateTimeline(totais);
-                renderDetalhesMarcas(dadosMarcas);
                 
                 console.log("🎉 Dashboard carregado com sucesso!");
 
@@ -394,49 +385,9 @@
             document.getElementById('velocidade-media').textContent = `${velocidadeMedia} itens/dia`;
         }
 
-        function renderDetalhesMarcas(dadosMarcas) {
-            if (!dadosMarcas || dadosMarcas.length === 0) {
-                document.getElementById('detalhes-marcas').innerHTML = `
-                    <div style="text-align: center; color: var(--text-secondary); padding: 20px;">
-                        Nenhum dado de marcas disponível
-                    </div>
-                `;
-                return;
-            }
-
-            const container = document.getElementById('detalhes-marcas');
-            container.innerHTML = '';
-
-            // Ordenar marcas por quantidade (maior primeiro)
-            dadosMarcas.sort((a, b) => b.Total_Itens - a.Total_Itens);
-
-            dadosMarcas.forEach((marca, index) => {
-                const totalGeral = dadosMarcas.reduce((sum, m) => sum + m.Total_Itens, 0);
-                const porcentagem = ((marca.Total_Itens / totalGeral) * 100).toFixed(1);
-                
-                const marcaHTML = `
-                    <div class="marca-card">
-                        <div class="marca-header">
-                            <div class="marca-icon">${index + 1}</div>
-                            <strong style="flex: 1;">${marca.Marca}</strong>
-                            <span style="font-weight: 600; color: #4ECDC4;">${marca.Total_Itens} itens</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${porcentagem}%; background: #4ECDC4;"></div>
-                        </div>
-                        <div style="text-align: right; font-size: 0.8rem; color: var(--text-secondary); margin-top: 5px;">
-                            ${porcentagem}% do total
-                        </div>
-                    </div>
-                `;
-                container.innerHTML += marcaHTML;
-            });
-        }
-
         // Iniciar
         carregarDashboard();
     });
     </script>
 </body>
 </html>
-
