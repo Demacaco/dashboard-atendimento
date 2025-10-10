@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Atendimento de Garantias e Concessionárias</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script type="text/javascript" src="https://me.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=6g5rA8C0ETkBhHZomfGISV1x2ew1lySS8k9Oxo8IDddQo5VbDU65YLq2jLTvwrJbhJkLxlVDrEMV2ixpcSeTHOc4NjI2AXSOUsXTcnmDCRTsw8C6RbPoU6ry5xpt99Py" charset="UTF-8"></script>
     <style>
         :root {
             --dark-bg: #0f172a; --card-bg: #1e293b; --accent: #3b82f6; --accent-hover: #2563eb;
@@ -55,14 +56,16 @@
         
         <div class="dashboard">
             <div class="card">
-                <div class="card-header"><h2 class="card-title">Resumo por Origem do Estoque</h2></div>
+                <div class="card-header">
+                    <h2 class="card-title">Resumo por Origem do Estoque</h2>
+                </div>
                 <table class="data-table">
                     <thead>
                         <tr>
                             <th>Origem do Estoque</th>
-                            <th>Itens Faltantes</th>
                             <th>Itens Separados</th>
-                            <th>Total Geral de Itens</th>
+                            <th>Peças em Fila</th>
+                            <th>Total Geral</th>
                         </tr>
                     </thead>
                     <tbody id="tabela-dados">
@@ -71,22 +74,22 @@
                     <tfoot>
                         <tr class="total-row">
                             <td style="text-align: left;">TOTAL GERAL</td>
-                            <td id="total-faltantes">...</td>
                             <td id="total-separados">...</td>
+                            <td id="total-fila">...</td>
                             <td id="total-geral">...</td>
                         </tr>
                     </tfoot>
                 </table>
                 <div class="stats-container">
                     <div class="stat-card">
-                        <div class="stat-label">Itens Faltantes</div>
-                        <div id="kpi-faltantes-valor" class="stat-value">...</div>
-                        <div id="kpi-faltantes-percent" class="stat-label">...</div>
-                    </div>
-                    <div class="stat-card">
                         <div class="stat-label">Itens Separados</div>
                         <div id="kpi-separados-valor" class="stat-value">...</div>
                         <div id="kpi-separados-percent" class="stat-label">...</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Peças em Fila</div>
+                        <div id="kpi-fila-valor" class="stat-value">...</div>
+                        <div id="kpi-fila-percent" class="stat-label">...</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">Total de Itens</div>
@@ -96,7 +99,9 @@
             </div>
             
             <div class="card">
-                <div class="card-header"><h2 class="card-title">Análise de Progresso</h2></div>
+                <div class="card-header">
+                    <h2 class="card-title">Análise de Progresso</h2>
+                </div>
                 <div id="progress-container">
                     <div style="text-align: center; padding: 20px; color: var(--text-secondary);">Carregando...</div>
                 </div>
@@ -115,20 +120,20 @@
                 <h3 class="chart-title">Timeline do Atendimento</h3>
                 <div class="timeline">
                     <div class="timeline-item">
-                        <span>📅 Início do atendimento:</span>
-                        <span id="data-inicio" style="font-weight: 600;">15/01/2024</span>
+                        <span>📅 Data de Solicitação:</span>
+                        <span id="data-solicitacao" style="font-weight: 600;">29/09/2025</span>
                     </div>
                     <div class="timeline-item">
-                        <span>⏱️ Duração:</span>
-                        <span id="duracao" style="font-weight: 600;">12 dias</span>
+                        <span>⏱️ Dias em Andamento:</span>
+                        <span id="dias-andamento" style="font-weight: 600;">...</span>
                     </div>
                     <div class="timeline-item">
-                        <span>🎯 Previsão de conclusão:</span>
-                        <span id="previsao-conclusao" style="font-weight: 600;">27/01/2024</span>
+                        <span>🎯 Taxa de Separação:</span>
+                        <span id="taxa-separacao" style="font-weight: 600;">...</span>
                     </div>
                     <div class="timeline-item">
-                        <span>⚡ Velocidade média:</span>
-                        <span id="velocidade-media" style="font-weight: 600;">18 itens/dia</span>
+                        <span>⚡ Eficiência:</span>
+                        <span id="eficiencia" style="font-weight: 600;">...</span>
                     </div>
                 </div>
             </div>
@@ -152,38 +157,39 @@
                 }
                 
                 const data = await response.json();
-                console.log("📦 Dados recebidos (ARRAY DIRETO):", data);
+                console.log("📦 Dados recebidos:", data);
                 
-                // CORREÇÃO: Os dados vêm como array direto, não como objeto
-                if (!data || data.length === 0) {
-                    throw new Error('Nenhum dado encontrado na planilha');
+                // Verificar se há erro
+                if (data.error) {
+                    throw new Error(data.error);
                 }
                 
-                // Verificar estrutura dos dados
-                if (!data[0].Origem) {
-                    console.log("Estrutura do primeiro item:", data[0]);
-                    throw new Error('Estrutura de dados inesperada');
+                // Processar dados de origem
+                const dadosOrigem = data.dadosOrigem;
+                const dadosMarca = data.dadosMarca;
+                
+                if (!dadosOrigem || dadosOrigem.length === 0) {
+                    throw new Error('Nenhum dado de origem encontrado na planilha');
                 }
                 
-                // Processar dados das marcas a partir do array
-                const dadosMarcas = processarDadosMarcas(data);
-                console.log("🏷️ Dados de marcas processados:", dadosMarcas);
+                console.log("📊 Dados de origem:", dadosOrigem);
+                console.log("🏷️ Dados de marcas:", dadosMarca);
 
-                // Calcular totais
+                // Calcular totais - ajustando para a estrutura real dos seus dados
                 const totais = {
-                    faltantes: data.reduce((sum, item) => sum + (Number(item.Itens_Faltantes) || 0), 0),
-                    separados: data.reduce((sum, item) => sum + (Number(item.Itens_Separados) || 0), 0),
-                    geral: data.reduce((sum, item) => sum + (Number(item.Total_Itens) || 0), 0)
+                    separados: dadosOrigem.reduce((sum, item) => sum + (Number(item.Itens_Separados) || 0), 0),
+                    fila: dadosOrigem.reduce((sum, item) => sum + (Number(item.Itens_Faltantes) || 0), 0),
+                    geral: dadosOrigem.reduce((sum, item) => sum + (Number(item.Total_Itens) || 0), 0)
                 };
 
                 console.log("🧮 Totais calculados:", totais);
 
                 // Renderizar tudo
-                renderTabela(data, totais);
+                renderTabela(dadosOrigem, totais);
                 updateKPIs(totais);
-                renderProgressBars(data);
-                updateInsights(data);
-                renderMarcasChart(dadosMarcas);
+                renderProgressBars(dadosOrigem);
+                updateInsights(dadosOrigem);
+                renderMarcasChart(dadosMarca);
                 updateTimeline(totais);
                 
                 console.log("🎉 Dashboard carregado com sucesso!");
@@ -199,32 +205,6 @@
             }
         }
 
-        // NOVA FUNÇÃO: Processar dados das marcas do array
-        function processarDadosMarcas(data) {
-            const marcas = ['Zontes', 'Suzuki', 'Haouje', 'Kymco', 'Hisun'];
-            const dadosMarcaTemp = {};
-            
-            data.forEach(item => {
-                marcas.forEach(marca => {
-                    if (item[marca] && item[marca] > 0) {
-                        if (dadosMarcaTemp[marca]) {
-                            dadosMarcaTemp[marca] += Number(item[marca]);
-                        } else {
-                            dadosMarcaTemp[marca] = Number(item[marca]);
-                        }
-                    }
-                });
-            });
-            
-            // Converter para array
-            return Object.keys(dadosMarcaTemp).map(marca => {
-                return {
-                    "Marca": marca,
-                    "Total_Itens": dadosMarcaTemp[marca]
-                };
-            });
-        }
-
         function renderTabela(data, totais) {
             const tabelaCorpo = document.getElementById('tabela-dados');
             tabelaCorpo.innerHTML = '';
@@ -233,24 +213,24 @@
                 const row = `
                     <tr>
                         <td style="text-align: left; font-weight: 600;">${item.Origem}</td>
-                        <td>${item.Itens_Faltantes}</td>
                         <td>${item.Itens_Separados}</td>
+                        <td>${item.Itens_Faltantes}</td>
                         <td>${item.Total_Itens}</td>
                     </tr>
                 `;
                 tabelaCorpo.innerHTML += row;
             });
 
-            document.getElementById('total-faltantes').textContent = totais.faltantes;
             document.getElementById('total-separados').textContent = totais.separados;
+            document.getElementById('total-fila').textContent = totais.fila;
             document.getElementById('total-geral').textContent = totais.geral;
         }
 
         function updateKPIs(totais) {
-            document.getElementById('kpi-faltantes-valor').textContent = totais.faltantes;
-            document.getElementById('kpi-faltantes-percent').textContent = `${((totais.faltantes / totais.geral) * 100).toFixed(0)}% do total`;
             document.getElementById('kpi-separados-valor').textContent = totais.separados;
             document.getElementById('kpi-separados-percent').textContent = `${((totais.separados / totais.geral) * 100).toFixed(0)}% do total`;
+            document.getElementById('kpi-fila-valor').textContent = totais.fila;
+            document.getElementById('kpi-fila-percent').textContent = `${((totais.fila / totais.geral) * 100).toFixed(0)}% do total`;
             document.getElementById('kpi-total-valor').textContent = totais.geral;
         }
 
@@ -260,13 +240,13 @@
             
             const coresProgresso = {
                 'a4': '#FF6B6B',
-                'concessionarias': '#4ECDC4',
+                'concessionárias': '#4ECDC4',
                 'garantias': '#45B7D1'
             };
             
             data.forEach(item => {
                 const percentual = (item.Itens_Separados / item.Total_Itens) * 100;
-                const origemID = item.Origem.toLowerCase().replace(/ç/g, 'c').replace(/ã/g, 'a');
+                const origemID = item.Origem.toLowerCase().replace(/ç/g, 'c').replace(/ã/g, 'a').replace(/á/g, 'a').replace(/é/g, 'e').replace(/í/g, 'i').replace(/ó/g, 'o').replace(/ú/g, 'u');
                 const cor = coresProgresso[origemID] || '#3b82f6';
                 
                 const progressBarHTML = `
@@ -370,23 +350,25 @@
         }
 
         function updateTimeline(totais) {
-            const dataInicio = new Date('2025-09-29');
+            const dataSolicitacao = new Date('2025-09-29');
             const hoje = new Date();
-            const diffTime = Math.abs(hoje - dataInicio);
+            const diffTime = Math.abs(hoje - dataSolicitacao);
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             
-            const velocidadeMedia = (totais.separados / diffDays).toFixed(1);
-            const previsaoConclusao = new Date(dataInicio);
-            previsaoConclusao.setDate(dataInicio.getDate() + Math.ceil(totais.geral / velocidadeMedia));
+            const taxaSeparacao = ((totais.separados / totais.geral) * 100).toFixed(1);
+            const eficiencia = (totais.separados / diffDays).toFixed(1);
 
-            document.getElementById('data-inicio').textContent = dataInicio.toLocaleDateString('pt-BR');
-            document.getElementById('duracao').textContent = `${diffDays} dias`;
-            document.getElementById('previsao-conclusao').textContent = previsaoConclusao.toLocaleDateString('pt-BR');
-            document.getElementById('velocidade-media').textContent = `${velocidadeMedia} itens/dia`;
+            document.getElementById('data-solicitacao').textContent = '29/09/2025';
+            document.getElementById('dias-andamento').textContent = `${diffDays} dias`;
+            document.getElementById('taxa-separacao').textContent = `${taxaSeparacao}%`;
+            document.getElementById('eficiencia').textContent = `${eficiencia} itens/dia`;
         }
 
-        // Iniciar
+        // Iniciar carregamento
         carregarDashboard();
+        
+        // Atualizar a cada 5 minutos
+        setInterval(carregarDashboard, 300000);
     });
     </script>
 </body>
