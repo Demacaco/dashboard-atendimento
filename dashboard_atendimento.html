@@ -129,12 +129,11 @@
         </div>
     </div>
 
-    <script>
-        <script>
+<script>
         // ####################################################################
-        // IMPORTANTE: VERIFIQUE SE A SUA URL ESTÁ CORRETA AQUI
+        // IMPORTANTE: COLE A URL DO SEU APLICATIVO WEB DO GOOGLE AQUI
         // ####################################################################
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxwiJzx5fn9i1GqDRuoVa-oLXkLlMGJbihXXojvK5Y1VZA8Ah_3v_VjoZGWNSQQlp-iUw/exec';
+        const WEB_APP_URL = 'COLE_A_SUA_URL_AQUI';
 
         let origemChart, marcaChart;
 
@@ -155,7 +154,10 @@
             document.getElementById('tabela-status').innerHTML = `<tr><td colspan="5"><div class="loader"></div></td></tr>`;
             document.getElementById('tabela-historico').innerHTML = `<tr><td colspan="5"><div class="loader"></div></td></tr>`;
             
-            // O bloco IF problemático foi REMOVIDO daqui.
+            if (WEB_APP_URL === 'COLE_A_SUA_URL_AQUI') {
+                alert('ERRO: Você precisa colar a URL do seu Google Apps Script na variável WEB_APP_URL.');
+                return;
+            }
 
             try {
                 const response = await fetch(WEB_APP_URL);
@@ -299,4 +301,5 @@
         }
     </script>
 </html>
+
 
