@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Atendimento - Logística</title>
+    <title>Dashboard de Atendimento - Logística</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -17,7 +17,7 @@
         body { background: linear-gradient(135deg, var(--dark) 0%, #1e293b 100%); color: var(--text); min-height: 100vh; }
         .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
         header { text-align: center; margin-bottom: 30px; padding: 30px; background: rgba(30, 41, 59, 0.8); border-radius: var(--border-radius); }
-        h1 { font-size: 2.5rem; margin-bottom: 10px; background: linear-gradient(90deg, var(--secondary), var(--accent)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        h1 { font-size: 2.5rem; margin-bottom: 10px; color: var(--accent); } /* Título alterado */
         .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; background: var(--card-bg); padding: 15px; border-radius: var(--border-radius); }
         .nav-tab { padding: 12px 24px; background: rgba(255,255,255,0.1); border: none; color: var(--text); border-radius: 8px; cursor: pointer; transition: all 0.3s; }
         .nav-tab.active { background: var(--secondary); color: white; }
@@ -58,7 +58,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>ATENDIMENTO PEDIDOS BOs - ESTOQUE DE PEÇAS</h1>
+            <h1>ATENDIMENTO PEDIDOS BOS - ESTOQUE DE PEÇAS</h1>
             <p>Garantias, Concessionárias e Solicitações</p>
         </header>
         
@@ -99,7 +99,7 @@
                 <div class="card-header"><h2 class="card-title">Nova Solicitação de Atendimento</h2></div>
                 <form id="form-solicitacao">
                     <div class="form-grid">
-                        <div class="form-group"><label class="form-label">Data da Solicitação</label><input type="date" class="form-input" id="data-solicitacao" required></div>
+                        <div class="form-group"><label class="form-label">Data</label><input type="date" class="form-input" id="data-solicitacao" required></div>
                         <div class="form-group"><label class="form-label">Tipo</label><select class="form-select" id="tipo-atendimento" required><option value="">Selecione...</option><option value="A4">A4</option><option value="Concessionárias">Concessionárias</option><option value="Garantias">Garantias</option></select></div>
                         <div class="form-group"><label class="form-label">Itens Solicitados</label><input type="number" class="form-input" id="itens-solicitados" min="1" required></div>
                     </div>
@@ -133,16 +133,19 @@
         // ####################################################################
         // IMPORTANTE: COLE A URL DO SEU APLICATIVO WEB DO GOOGLE AQUI
         // ####################################################################
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxwiJzx5fn9i1GqDRuoVa-oLXkLlMGJbihXXojvK5Y1VZA8Ah_3v_VjoZGWNSQQlp-iUw/exec';
+        const WEB_APP_URL = 'COLE_A_SUA_URL_AQUI';
 
+        // Variáveis globais para os gráficos, para que possam ser destruídos e recriados.
         let origemChart, marcaChart;
 
+        // Função que roda assim que a página termina de carregar.
         document.addEventListener('DOMContentLoaded', function() {
             carregarDados();
             document.getElementById('form-solicitacao').addEventListener('submit', salvarSolicitacao);
-            document.getElementById('data-solicitacao').valueAsDate = new Date();
+            document.getElementById('data-solicitacao').valueAsDate = new Date(); // Define a data de hoje no formulário.
         });
 
+        // Controla a navegação por abas.
         function openTab(event, tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
@@ -150,12 +153,13 @@
             event.currentTarget.classList.add('active');
         }
 
+        // Função principal que busca os dados da planilha Google.
         async function carregarDados() {
             document.getElementById('tabela-status').innerHTML = `<tr><td colspan="5"><div class="loader"></div></td></tr>`;
             document.getElementById('tabela-historico').innerHTML = `<tr><td colspan="5"><div class="loader"></div></td></tr>`;
             
             if (WEB_APP_URL === 'COLE_A_SUA_URL_AQUI') {
-                alert('ERRO: Você precisa colar a URL do seu Google Apps Script na variável WEB_APP_URL no código HTML.');
+                alert('ERRO: Você precisa colar a URL do seu Google Apps Script na variável WEB_APP_URL.');
                 return;
             }
 
@@ -182,6 +186,7 @@
             }
         }
 
+        // Atualiza os cards e a tabela de status no dashboard.
         function atualizarDashboard(dados, marcas, historico) {
             const totalSeparados = Object.values(dados).reduce((sum, item) => sum + item.separados, 0);
             const totalFila = Object.values(dados).reduce((sum, item) => sum + item.fila, 0);
@@ -204,102 +209,58 @@
             }
         }
 
- function atualizarGraficos(dados, marcas) {
-        const ctxOrigem = document.getElementById('origemChart').getContext('2d');
-        const ctxMarca = document.getElementById('marcaChart').getContext('2d');
-        
-        // Destrói gráficos existentes para evitar sobreposição
-        if (origemChart) origemChart.destroy();
-        if (marcaChart) marcaChart.destroy();
+        // Cria e atualiza os gráficos com as cores corrigidas.
+        function atualizarGraficos(dados, marcas) {
+            if (origemChart) origemChart.destroy();
+            if (marcaChart) marcaChart.destroy();
 
-        // 1. Gráfico de Distribuição por Tipo (Barras)
-        // Cores em degradê laranja e azul
-        const barColors = {
-            separados: 'rgba(59, 130, 246, 0.8)', // Um azul mais suave
-            fila: 'rgba(245, 158, 11, 0.8)'       // Um laranja mais suave
-        };
-
-        origemChart = new Chart(ctxOrigem, {
-            type: 'bar',
-            data: {
-                labels: Object.keys(dados),
-                datasets: [
-                    {
-                        label: 'Itens Separados',
-                        data: Object.values(dados).map(d => d.separados),
-                        backgroundColor: barColors.separados,
-                        borderColor: barColors.separados.replace('0.8', '1'), // Borda sólida da mesma cor
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'Peças em Fila',
-                        data: Object.values(dados).map(d => d.fila),
-                        backgroundColor: barColors.fila,
-                        borderColor: barColors.fila.replace('0.8', '1'),
-                        borderWidth: 1
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { color: 'var(--text-secondary)' },
-                        grid: { color: 'rgba(255,255,255,0.05)' } // Linhas de grade mais suaves
-                    },
-                    x: {
-                        ticks: { color: 'var(--text-secondary)' },
-                        grid: { color: 'rgba(255,255,255,0.05)' }
-                    }
+            const ctxOrigem = document.getElementById('origemChart').getContext('2d');
+            origemChart = new Chart(ctxOrigem, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(dados),
+                    datasets: [
+                        { label: 'Itens Separados', data: Object.values(dados).map(d => d.separados), backgroundColor: 'rgba(59, 130, 246, 0.8)' }, // Azul
+                        { label: 'Peças em Fila', data: Object.values(dados).map(d => d.fila), backgroundColor: 'rgba(245, 158, 11, 0.8)' }  // Laranja
+                    ]
                 },
-                plugins: {
-                    legend: {
-                        labels: { color: 'var(--text-secondary)' }
-                    }
-                }
-            }
-        });
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: 'var(--text-secondary)' }, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { ticks: { color: 'var(--text-secondary)' }, grid: { display: false } } }, plugins: { legend: { labels: { color: 'var(--text-secondary)' } } } }
+            });
 
-        // 2. Gráfico de Distribuição por Marca (Pizza/Doughnut)
-        // As cores que você já tinha ou uma paleta mais harmoniosa
-        const doughnutColors = [
-            '#3b82f6', // Azul
-            '#ef4444', // Vermelho
-            '#10b981', // Verde
-            '#f59e0b', // Laranja
-            '#8b5cf6', // Roxo
-            '#64748b'  // Cinza
-        ];
-
-        marcaChart = new Chart(ctxMarca, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(marcas),
-                datasets: [
-                    {
-                        data: Object.values(marcas),
-                        backgroundColor: doughnutColors, // Usando a paleta definida
-                        borderColor: 'var(--card-bg)', // Borda para separar as fatias
-                        borderWidth: 2
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { color: 'var(--text-secondary)' }
-                    }
-                }
-            }
-        });
-    }
+            const ctxMarca = document.getElementById('marcaChart').getContext('2d');
+            marcaChart = new Chart(ctxMarca, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(marcas),
+                    datasets: [{ data: Object.values(marcas), backgroundColor: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#64748b'], borderColor: 'var(--card-bg)', borderWidth: 2 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: 'var(--text-secondary)' } } } }
+            });
         }
 
+        // Constrói a tabela de histórico com botões de status.
+        function carregarHistorico(solicitacoes) {
+            const tabela = document.getElementById('tabela-historico');
+            if (!solicitacoes || solicitacoes.length === 0) {
+                tabela.innerHTML = '<tr><td colspan="5">Nenhuma solicitação encontrada</td></tr>';
+                return;
+            }
+            tabela.innerHTML = '';
+            solicitacoes.forEach(sol => {
+                const marcas = Object.entries(sol.marcas).filter(([_, v]) => v > 0).map(([m, v]) => `${m}: ${v}`).join('<br>');
+                const statusClass = sol.status === 'Atendido' ? 'btn-success' : 'btn-warning';
+                tabela.innerHTML += `
+                    <tr>
+                        <td>${sol.data}</td>
+                        <td>${sol.tipo}</td>
+                        <td>${sol.itens}</td>
+                        <td>${marcas || 'N/D'}</td>
+                        <td><button class="btn ${statusClass}" style="padding: 6px 12px; font-size: 0.8rem;" onclick="atualizarStatus(event, ${sol.rowIndex}, '${sol.status}')">${sol.status}</button></td>
+                    </tr>`;
+            });
+        }
+
+        // Envia uma nova solicitação para a planilha.
         async function salvarSolicitacao(event) {
             event.preventDefault();
             const btn = event.target.querySelector('button[type="submit"]');
@@ -313,9 +274,10 @@
             };
             try {
                 await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(solicitacao) });
-                alert('Solicitação enviada com sucesso! Os dados serão atualizados em breve.');
+                alert('Solicitação enviada com sucesso! Atualizando o dashboard...');
                 document.getElementById('form-solicitacao').reset();
                 document.getElementById('data-solicitacao').valueAsDate = new Date();
+                openTab({currentTarget: document.querySelector('.nav-tab.active')}, 'dashboard'); // Volta para o dashboard
             } catch (error) {
                 console.error('Erro ao salvar:', error);
                 alert('Falha ao salvar a solicitação.');
@@ -326,6 +288,7 @@
             }
         }
 
+        // Envia uma atualização de status para a planilha.
         async function atualizarStatus(event, rowIndex, currentStatus) {
             const newStatus = currentStatus === 'Pendente' ? 'Atendido' : 'Pendente';
             const button = event.target;
@@ -337,15 +300,14 @@
                     mode: 'no-cors',
                     body: JSON.stringify({ action: 'updateStatus', rowIndex: rowIndex, newStatus: newStatus })
                 });
-                carregarDados();
+                carregarDados(); // Recarrega todos os dados para refletir a mudança.
             } catch (error) {
                 console.error('Erro ao atualizar status:', error);
                 alert('Falha ao atualizar o status.');
                 button.disabled = false;
-                button.innerHTML = currentStatus;
+                button.innerHTML = currentStatus; // Reverte o botão em caso de erro.
             }
         }
     </script>
 </body>
 </html>
-
