@@ -204,39 +204,100 @@
             }
         }
 
-        function atualizarGraficos(dados, marcas) {
-            const ctxOrigem = document.getElementById('origemChart').getContext('2d');
-            const ctxMarca = document.getElementById('marcaChart').getContext('2d');
-            if (origemChart) origemChart.destroy();
-            if (marcaChart) marcaChart.destroy();
-            origemChart = new Chart(ctxOrigem, { type: 'bar', data: { labels: Object.keys(dados), datasets: [{ label: 'Itens Separados', data: Object.values(dados).map(d => d.separados), backgroundColor: 'var(--success)' }, { label: 'Peças em Fila', data: Object.values(dados).map(d => d.fila), backgroundColor: 'var(--warning)' }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: 'var(--text-secondary)' } }, x: { ticks: { color: 'var(--text-secondary)' } } }, plugins: { legend: { labels: { color: 'var(--text-secondary)' } } } } });
-            marcaChart = new Chart(ctxMarca, { type: 'doughnut', data: { labels: Object.keys(marcas), datasets: [{ data: Object.values(marcas), backgroundColor: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#64748b'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: 'var(--text-secondary)' } } } } });
-        }
+ function atualizarGraficos(dados, marcas) {
+        const ctxOrigem = document.getElementById('origemChart').getContext('2d');
+        const ctxMarca = document.getElementById('marcaChart').getContext('2d');
+        
+        // Destrói gráficos existentes para evitar sobreposição
+        if (origemChart) origemChart.destroy();
+        if (marcaChart) marcaChart.destroy();
 
-        function carregarHistorico(solicitacoes) {
-            const tabela = document.getElementById('tabela-historico');
-            if (!solicitacoes || solicitacoes.length === 0) {
-                tabela.innerHTML = '<tr><td colspan="5">Nenhuma solicitação encontrada</td></tr>';
-                return;
+        // 1. Gráfico de Distribuição por Tipo (Barras)
+        // Cores em degradê laranja e azul
+        const barColors = {
+            separados: 'rgba(59, 130, 246, 0.8)', // Um azul mais suave
+            fila: 'rgba(245, 158, 11, 0.8)'       // Um laranja mais suave
+        };
+
+        origemChart = new Chart(ctxOrigem, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(dados),
+                datasets: [
+                    {
+                        label: 'Itens Separados',
+                        data: Object.values(dados).map(d => d.separados),
+                        backgroundColor: barColors.separados,
+                        borderColor: barColors.separados.replace('0.8', '1'), // Borda sólida da mesma cor
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Peças em Fila',
+                        data: Object.values(dados).map(d => d.fila),
+                        backgroundColor: barColors.fila,
+                        borderColor: barColors.fila.replace('0.8', '1'),
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: 'var(--text-secondary)' },
+                        grid: { color: 'rgba(255,255,255,0.05)' } // Linhas de grade mais suaves
+                    },
+                    x: {
+                        ticks: { color: 'var(--text-secondary)' },
+                        grid: { color: 'rgba(255,255,255,0.05)' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: { color: 'var(--text-secondary)' }
+                    }
+                }
             }
-            tabela.innerHTML = '';
-            solicitacoes.forEach(sol => {
-                const marcas = Object.entries(sol.marcas).filter(([_, v]) => v > 0).map(([m, v]) => `${m}: ${v}`).join('<br>');
-                const statusClass = sol.status === 'Atendido' ? 'btn-success' : 'btn-warning';
-                tabela.innerHTML += `
-                    <tr>
-                        <td>${sol.data}</td>
-                        <td>${sol.tipo}</td>
-                        <td>${sol.itens}</td>
-                        <td>${marcas || 'N/D'}</td>
-                        <td>
-                            <button class="btn ${statusClass}" style="padding: 6px 12px; font-size: 0.8rem;" 
-                                onclick="atualizarStatus(event, ${sol.rowIndex}, '${sol.status}')">
-                                ${sol.status}
-                            </button>
-                        </td>
-                    </tr>`;
-            });
+        });
+
+        // 2. Gráfico de Distribuição por Marca (Pizza/Doughnut)
+        // As cores que você já tinha ou uma paleta mais harmoniosa
+        const doughnutColors = [
+            '#3b82f6', // Azul
+            '#ef4444', // Vermelho
+            '#10b981', // Verde
+            '#f59e0b', // Laranja
+            '#8b5cf6', // Roxo
+            '#64748b'  // Cinza
+        ];
+
+        marcaChart = new Chart(ctxMarca, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(marcas),
+                datasets: [
+                    {
+                        data: Object.values(marcas),
+                        backgroundColor: doughnutColors, // Usando a paleta definida
+                        borderColor: 'var(--card-bg)', // Borda para separar as fatias
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: 'var(--text-secondary)' }
+                    }
+                }
+            }
+        });
+    }
         }
 
         async function salvarSolicitacao(event) {
@@ -287,3 +348,4 @@
     </script>
 </body>
 </html>
+
