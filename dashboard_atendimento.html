@@ -81,6 +81,13 @@
         /* Tabs content */
         .tab-content { display: none; }
         .tab-content.active { display: block; }
+
+        .loader {
+            border: 5px solid #f3f3f3; border-top: 5px solid var(--secondary);
+            border-radius: 50%; width: 50px; height: 50px;
+            animation: spin 1s linear infinite; margin: 20px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         @media (max-width: 768px) {
             .charts-container { grid-template-columns: 1fr; }
@@ -100,21 +107,17 @@
         </header>
         
         <div class="nav-tabs">
-            <button class="nav-tab active" onclick="openTab('dashboard')">
+            <button class="nav-tab active" onclick="openTab(event, 'dashboard')">
                 <i class="fas fa-tachometer-alt"></i> Dashboard
             </button>
-            <button class="nav-tab" onclick="openTab('solicitacoes')">
+            <button class="nav-tab" onclick="openTab(event, 'solicitacoes')">
                 <i class="fas fa-plus-circle"></i> Nova Solicitação
             </button>
-            <button class="nav-tab" onclick="openTab('historico')">
+            <button class="nav-tab" onclick="openTab(event, 'historico')">
                 <i class="fas fa-history"></i> Histórico
-            </button>
-            <button class="nav-tab" onclick="openTab('timeline')">
-                <i class="fas fa-stream"></i> Linha do Tempo
             </button>
         </div>
         
-        <!-- Dashboard Tab -->
         <div id="dashboard" class="tab-content active">
             <div class="card">
                 <div class="card-header">
@@ -147,10 +150,10 @@
                         </div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Solicitações Ativas</div>
+                        <div class="stat-label">Solicitações no Histórico</div>
                         <div id="total-solicitacoes" class="stat-value">0</div>
-                        <div class="progress-bar">
-                            <div id="progress-solicitacoes" class="progress-fill" style="width: 0%; background: var(--accent);"></div>
+                         <div class="progress-bar">
+                            <div id="progress-solicitacoes" class="progress-fill" style="width: 100%; background: var(--accent);"></div>
                         </div>
                     </div>
                 </div>
@@ -158,7 +161,7 @@
             
             <div class="charts-container">
                 <div class="chart-card">
-                    <h3 class="card-title">Distribuição por Origem</h3>
+                    <h3 class="card-title">Distribuição por Tipo</h3>
                     <div class="chart-container">
                         <canvas id="origemChart"></canvas>
                     </div>
@@ -186,13 +189,12 @@
                         </tr>
                     </thead>
                     <tbody id="tabela-status">
-                        <tr><td colspan="5" style="text-align: center; padding: 20px;">Carregando dados...</td></tr>
+                        <tr><td colspan="5" style="text-align: center; padding: 20px;"><div class="loader"></div></td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
         
-        <!-- Nova Solicitação Tab -->
         <div id="solicitacoes" class="tab-content">
             <div class="card">
                 <div class="card-header">
@@ -221,33 +223,13 @@
                     </div>
                     
                     <div class="form-grid">
-                        <div class="form-group">
-                            <label class="form-label">Zontes</label>
-                            <input type="number" class="form-input" id="zontes" min="0" value="0">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Suzuki</label>
-                            <input type="number" class="form-input" id="suzuki" min="0" value="0">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Haojue</label>
-                            <input type="number" class="form-input" id="haojue" min="0" value="0">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Kymco</label>
-                            <input type="number" class="form-input" id="kymco" min="0" value="0">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Hisun</label>
-                            <input type="number" class="form-input" id="hisun" min="0" value="0">
-                        </div>
+                        <div class="form-group"><label class="form-label">Zontes</label><input type="number" class="form-input" id="zontes" min="0" value="0"></div>
+                        <div class="form-group"><label class="form-label">Suzuki</label><input type="number" class="form-input" id="suzuki" min="0" value="0"></div>
+                        <div class="form-group"><label class="form-label">Haojue</label><input type="number" class="form-input" id="haojue" min="0" value="0"></div>
+                        <div class="form-group"><label class="form-label">Kymco</label><input type="number" class="form-input" id="kimco" min="0" value="0"></div>
+                        <div class="form-group"><label class="form-label">Hisun</label><input type="number" class="form-input" id="hisun" min="0" value="0"></div>
                     </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Observações</label>
-                        <textarea class="form-input" id="observacoes" rows="3" placeholder="Observações adicionais..."></textarea>
-                    </div>
-                    
+                                        
                     <div style="margin-top: 20px; display: flex; gap: 10px;">
                         <button type="submit" class="btn btn-success">
                             <i class="fas fa-save"></i> Salvar Solicitação
@@ -260,131 +242,115 @@
             </div>
         </div>
         
-        <!-- Histórico Tab -->
         <div id="historico" class="tab-content">
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">Histórico de Solicitações</h2>
-                    <button class="btn btn-primary" onclick="carregarHistorico()">
-                        <i class="fas fa-sync-alt"></i> Atualizar
-                    </button>
                 </div>
                 <table class="data-table">
                     <thead>
                         <tr>
                             <th>Data</th>
                             <th>Tipo</th>
-                            <th>Itens Solicitados</th>
+                            <th>Itens</th>
                             <th>Marcas</th>
                             <th>Status</th>
-                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody id="tabela-historico">
-                        <tr><td colspan="6" style="text-align: center; padding: 20px;">Nenhuma solicitação encontrada</td></tr>
+                        <tr><td colspan="5" style="text-align: center; padding: 20px;"><div class="loader"></div></td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
         
-        <!-- Timeline Tab -->
-        <div id="timeline" class="tab-content">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Linha do Tempo - Atividades Recentes</h2>
-                </div>
-                <div class="timeline" id="timeline-container">
-                    <div class="timeline-item">
-                        <div class="timeline-content">
-                            <h4>Sistema Iniciado</h4>
-                            <p>O sistema de atendimento foi colocado em produção</p>
-                            <small>Hoje às <span id="hora-atual"></span></small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Variáveis globais
+        // ####################################################################
+        // IMPORTANTE: COLE A URL DO SEU APLICATIVO WEB AQUI
+        // ####################################################################
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxqzeFsN1GD9vAQe5HGrJ8M15xBYHT0cw-wj5YcGzAcCDgai0QOJyJ_VfIW4_1wHke2vw/exec';
+
+        // Variáveis globais dos gráficos
         let origemChart, marcaChart;
-        const SOLICITACOES_KEY = 'solicitacoes_atendimento';
-        
-        // Inicialização
+
+        // Função executada quando a página carrega
         document.addEventListener('DOMContentLoaded', function() {
             carregarDados();
-            atualizarHora();
-            setInterval(atualizarHora, 60000);
             
-            // Configurar formulário
+            // Configurar o formulário de nova solicitação
             document.getElementById('form-solicitacao').addEventListener('submit', salvarSolicitacao);
             document.getElementById('data-solicitacao').valueAsDate = new Date();
         });
-        
-        // Funções de navegação
-        function openTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
+
+        // Funções de navegação entre abas
+        function openTab(event, tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
             
             document.getElementById(tabName).classList.add('active');
             event.currentTarget.classList.add('active');
+        }
+
+        // Função principal para carregar dados da planilha
+        async function carregarDados() {
+            // Mostra indicadores de carregamento
+            document.getElementById('tabela-status').innerHTML = '<tr><td colspan="5"><div class="loader"></div></td></tr>';
+            document.getElementById('tabela-historico').innerHTML = '<tr><td colspan="5"><div class="loader"></div></td></tr>';
             
-            if (tabName === 'historico') carregarHistorico();
-            if (tabName === 'timeline') carregarTimeline();
-        }
-        
-        // Carregar dados do dashboard
-        function carregarDados() {
-            // Simular carregamento de dados
-            setTimeout(() => {
-                // Dados de exemplo baseados na sua planilha
-                const dados = {
-                    A4: { separados: 26, fila: 35, total: 61 },
-                    Concessionárias: { separados: 145, fila: 146, total: 291 },
-                    Garantias: { separados: 44, fila: 44, total: 88 }
-                };
+            if (WEB_APP_URL === 'COLE_A_SUA_URL_AQUI') {
+                alert('ERRO: Você precisa colar a URL do seu Google Apps Script na variável WEB_APP_URL no código HTML.');
+                return;
+            }
+
+            try {
+                const response = await fetch(WEB_APP_URL);
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
                 
-                const marcas = {
-                    Zontes: 132,
-                    Suzuki: 56,
-                    Haojue: 33, // CORRIGIDO: Haouje -> Haojue
-                    Kymco: 3,
-                    Hisun: 1
-                };
-                
-                atualizarDashboard(dados, marcas);
-                atualizarGraficos(dados, marcas);
-            }, 1000);
+                // Transforma o array de dados para o formato que as funções esperam
+                const dadosDashboard = data.dadosOrigem.reduce((obj, item) => {
+                    obj[item.tipo] = { separados: item.separados, fila: item.fila, total: item.total };
+                    return obj;
+                }, {});
+
+                atualizarDashboard(dadosDashboard, data.dadosMarca, data.dadosHistorico);
+                atualizarGraficos(dadosDashboard, data.dadosMarca);
+                carregarHistorico(data.dadosHistorico);
+
+            } catch (error) {
+                console.error('Falha ao carregar dados:', error);
+                alert('Não foi possível carregar os dados da planilha. Verifique o console para mais detalhes.');
+                document.getElementById('tabela-status').innerHTML = '<tr><td colspan="5">Erro ao carregar dados.</td></tr>';
+                document.getElementById('tabela-historico').innerHTML = '<tr><td colspan="5">Erro ao carregar dados.</td></tr>';
+            }
         }
-        
-        // Atualizar dashboard com dados
-        function atualizarDashboard(dados, marcas) {
+
+        // Atualiza os cards, barras de progresso e a tabela de status
+        function atualizarDashboard(dados, marcas, historico) {
             const totalSeparados = Object.values(dados).reduce((sum, item) => sum + item.separados, 0);
             const totalFila = Object.values(dados).reduce((sum, item) => sum + item.fila, 0);
-            const totalGeral = Object.values(dados).reduce((sum, item) => sum + item.total, 0);
+            const totalGeral = totalSeparados + totalFila;
             
             document.getElementById('total-separados').textContent = totalSeparados;
             document.getElementById('total-fila').textContent = totalFila;
             document.getElementById('total-geral').textContent = totalGeral;
+            document.getElementById('total-solicitacoes').textContent = historico.length;
             
-            // Atualizar progress bars
-            document.getElementById('progress-separados').style.width = `${(totalSeparados / totalGeral) * 100}%`;
-            document.getElementById('progress-fila').style.width = `${(totalFila / totalGeral) * 100}%`;
+            document.getElementById('progress-separados').style.width = totalGeral > 0 ? `${(totalSeparados / totalGeral) * 100}%` : '0%';
+            document.getElementById('progress-fila').style.width = totalGeral > 0 ? `${(totalFila / totalGeral) * 100}%` : '0%';
             document.getElementById('progress-total').style.width = '100%';
             
-            // Atualizar tabela de status
-            const tabela = document.getElementById('tabela-status');
-            tabela.innerHTML = '';
+            const tabelaStatus = document.getElementById('tabela-status');
+            tabelaStatus.innerHTML = '';
             
             for (const [tipo, valores] of Object.entries(dados)) {
-                const progresso = (valores.separados / valores.total) * 100;
-                const linha = `
+                const progresso = valores.total > 0 ? (valores.separados / valores.total) * 100 : 0;
+                tabelaStatus.innerHTML += `
                     <tr>
                         <td style="text-align: left; font-weight: 600;">${tipo}</td>
                         <td>${valores.separados}</td>
@@ -398,192 +364,115 @@
                         </td>
                     </tr>
                 `;
-                tabela.innerHTML += linha;
             }
         }
-        
-        // Atualizar gráficos
+
+        // Atualiza os gráficos de Pizza e Barras
         function atualizarGraficos(dados, marcas) {
             const ctxOrigem = document.getElementById('origemChart').getContext('2d');
             const ctxMarca = document.getElementById('marcaChart').getContext('2d');
             
-            // Destruir gráficos existentes
             if (origemChart) origemChart.destroy();
             if (marcaChart) marcaChart.destroy();
             
-            // Gráfico de origem
             origemChart = new Chart(ctxOrigem, {
                 type: 'bar',
                 data: {
                     labels: Object.keys(dados),
                     datasets: [
-                        {
-                            label: 'Itens Separados',
-                            data: Object.values(dados).map(d => d.separados),
-                            backgroundColor: '#10b981'
-                        },
-                        {
-                            label: 'Peças em Fila',
-                            data: Object.values(dados).map(d => d.fila),
-                            backgroundColor: '#f59e0b'
-                        }
+                        { label: 'Itens Separados', data: Object.values(dados).map(d => d.separados), backgroundColor: '#10b981' },
+                        { label: 'Peças em Fila', data: Object.values(dados).map(d => d.fila), backgroundColor: '#f59e0b' }
                     ]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
             });
             
-            // Gráfico de marcas
             marcaChart = new Chart(ctxMarca, {
                 type: 'doughnut',
                 data: {
                     labels: Object.keys(marcas),
                     datasets: [{
                         data: Object.values(marcas),
-                        backgroundColor: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6']
+                        backgroundColor: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#64748b']
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
             });
         }
-        
-        // Salvar nova solicitação
-        function salvarSolicitacao(event) {
+
+        // Salva uma nova solicitação na planilha via POST
+        async function salvarSolicitacao(event) {
             event.preventDefault();
-            
+            const btn = event.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+
             const solicitacao = {
-                id: Date.now(),
                 data: document.getElementById('data-solicitacao').value,
                 tipo: document.getElementById('tipo-atendimento').value,
                 itens: parseInt(document.getElementById('itens-solicitados').value),
                 marcas: {
                     zontes: parseInt(document.getElementById('zontes').value),
                     suzuki: parseInt(document.getElementById('suzuki').value),
-                    haojue: parseInt(document.getElementById('haojue').value), // CORRIGIDO: haouje -> haojue
-                    kymco: parseInt(document.getElementById('kymco').value),
+                    haojue: parseInt(document.getElementById('haojue').value),
+                    kymco: parseInt(document.getElementById('kimco').value),
                     hisun: parseInt(document.getElementById('hisun').value)
-                },
-                observacoes: document.getElementById('observacoes').value,
-                status: 'Pendente',
-                timestamp: new Date().toISOString()
+                }
             };
             
-            // Salvar no localStorage (simulação)
-            const solicitacoes = JSON.parse(localStorage.getItem(SOLICITACOES_KEY) || '[]');
-            solicitacoes.push(solicitacao);
-            localStorage.setItem(SOLICITACOES_KEY, JSON.stringify(solicitacoes));
-            
-            // Limpar formulário
-            document.getElementById('form-solicitacao').reset();
-            document.getElementById('data-solicitacao').valueAsDate = new Date();
-            
-            // Feedback
-            alert('Solicitação salva com sucesso!');
-            
-            // Atualizar contador
-            document.getElementById('total-solicitacoes').textContent = solicitacoes.length;
-            document.getElementById('progress-solicitacoes').style.width = '100%';
-            
-            // Adicionar à timeline
-            adicionarEventoTimeline('Nova Solicitação', `Solicitação ${solicitacao.tipo} com ${solicitacao.itens} itens`);
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Importante para evitar erros de CORS com Apps Script
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(solicitacao)
+                });
+                
+                alert('Solicitação enviada com sucesso! Os dados serão atualizados em breve.');
+                document.getElementById('form-solicitacao').reset();
+                document.getElementById('data-solicitacao').valueAsDate = new Date();
+                
+            } catch (error) {
+                console.error('Erro ao salvar solicitação:', error);
+                alert('Falha ao salvar a solicitação.');
+            } finally {
+                 btn.disabled = false;
+                 btn.innerHTML = '<i class="fas fa-save"></i> Salvar Solicitação';
+                 // Recarrega os dados para refletir a nova adição
+                 carregarDados();
+            }
         }
-        
-        // Carregar histórico
-        function carregarHistorico() {
-            const solicitacoes = JSON.parse(localStorage.getItem(SOLICITACOES_KEY) || '[]');
+
+        // Carrega e exibe a tabela de histórico
+        function carregarHistorico(solicitacoes) {
             const tabela = document.getElementById('tabela-historico');
             
-            if (solicitacoes.length === 0) {
-                tabela.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px;">Nenhuma solicitação encontrada</td></tr>';
+            if (!solicitacoes || solicitacoes.length === 0) {
+                tabela.innerHTML = '<tr><td colspan="5">Nenhuma solicitação encontrada</td></tr>';
                 return;
             }
             
             tabela.innerHTML = '';
-            solicitacoes.reverse().forEach(sol => {
+            solicitacoes.forEach(sol => {
                 const marcas = Object.entries(sol.marcas)
                     .filter(([_, valor]) => valor > 0)
                     .map(([marca, valor]) => `${marca}: ${valor}`)
-                    .join(', ');
+                    .join('<br>');
                 
-                const linha = `
+                tabela.innerHTML += `
                     <tr>
-                        <td>${new Date(sol.data).toLocaleDateString('pt-BR')}</td>
+                        <td>${sol.data}</td>
                         <td>${sol.tipo}</td>
                         <td>${sol.itens}</td>
-                        <td>${marcas || 'Nenhuma'}</td>
+                        <td>${marcas || 'N/D'}</td>
                         <td><span style="padding: 4px 8px; background: var(--warning); border-radius: 4px;">${sol.status}</span></td>
-                        <td>
-                            <button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="editarSolicitacao(${sol.id})">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                        </td>
                     </tr>
                 `;
-                tabela.innerHTML += linha;
             });
         }
-        
-        // Carregar timeline
-        function carregarTimeline() {
-            const solicitacoes = JSON.parse(localStorage.getItem(SOLICITACOES_KEY) || '[]');
-            const timeline = document.getElementById('timeline-container');
-            
-            // Limpar timeline (exceto o primeiro item)
-            while (timeline.children.length > 1) {
-                timeline.removeChild(timeline.lastChild);
-            }
-            
-            // Adicionar eventos da timeline
-            solicitacoes.reverse().forEach(sol => {
-                adicionarEventoTimeline(
-                    `Solicitação ${sol.tipo}`, 
-                    `${sol.itens} itens solicitados - ${sol.status}`
-                );
-            });
-        }
-        
-        // Adicionar evento à timeline
-        function adicionarEventoTimeline(titulo, descricao) {
-            const timeline = document.getElementById('timeline-container');
-            const evento = document.createElement('div');
-            evento.className = 'timeline-item';
-            evento.innerHTML = `
-                <div class="timeline-content">
-                    <h4>${titulo}</h4>
-                    <p>${descricao}</p>
-                    <small>${new Date().toLocaleString('pt-BR')}</small>
-                </div>
-            `;
-            timeline.appendChild(evento);
-        }
-        
-        // Atualizar hora atual
-        function atualizarHora() {
-            document.getElementById('hora-atual').textContent = new Date().toLocaleTimeString('pt-BR', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            });
-        }
-        
-        // Editar solicitação (placeholder)
-        function editarSolicitacao(id) {
-            alert(`Editar solicitação ${id} - Funcionalidade em desenvolvimento`);
-        }
+
     </script>
 </body>
 </html>
