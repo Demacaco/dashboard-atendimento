@@ -208,6 +208,7 @@
             if (origemChart) origemChart.destroy();
             if (marcaChart) marcaChart.destroy();
 
+            // GRÁFICO DE BARRAS (DISTRIBUIÇÃO POR TIPO)
             const ctxOrigem = document.getElementById('origemChart').getContext('2d');
             origemChart = new Chart(ctxOrigem, {
                 type: 'bar',
@@ -218,38 +219,55 @@
                         { label: 'Peças em Fila', data: Object.values(dados).map(d => d.fila), backgroundColor: 'rgba(245, 158, 11, 0.8)' }
                     ]
                 },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: 'var(--text-secondary)' }, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { ticks: { color: 'var(--text-secondary)' }, grid: { display: false } } }, plugins: { legend: { labels: { color: 'var(--text-secondary)' } } } }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        // CORREÇÃO: Adicionando cor aos textos do eixo Y (números)
+                        y: { 
+                            beginAtZero: true, 
+                            ticks: { color: 'var(--text-secondary)' }, 
+                            grid: { color: 'rgba(255,255,255,0.05)' } 
+                        }, 
+                        // CORREÇÃO: Adicionando cor aos textos do eixo X (tipos)
+                        x: { 
+                            ticks: { color: 'var(--text-secondary)' }, 
+                            grid: { display: false } 
+                        } 
+                    }, 
+                    plugins: { 
+                        // CORREÇÃO: Adicionando cor aos textos da legenda
+                        legend: { 
+                            labels: { color: 'var(--text-secondary)' } 
+                        } 
+                    } 
+                }
             });
 
+            // GRÁFICO DE PIZZA (DISTRIBUIÇÃO POR MARCA)
             const ctxMarca = document.getElementById('marcaChart').getContext('2d');
             marcaChart = new Chart(ctxMarca, {
                 type: 'doughnut',
                 data: {
                     labels: Object.keys(marcas),
-                    datasets: [{ data: Object.values(marcas), backgroundColor: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#64748b'], borderColor: 'var(--card-bg)', borderWidth: 2 }]
+                    datasets: [{ 
+                        data: Object.values(marcas), 
+                        backgroundColor: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#64748b'], 
+                        borderColor: 'var(--card-bg)', 
+                        borderWidth: 2 
+                    }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: 'var(--text-secondary)' } } } }
-            });
-        }
-
-        function carregarHistorico(solicitacoes) {
-            const tabela = document.getElementById('tabela-historico');
-            if (!solicitacoes || solicitacoes.length === 0) {
-                tabela.innerHTML = '<tr><td colspan="5">Nenhuma solicitação encontrada</td></tr>';
-                return;
-            }
-            tabela.innerHTML = '';
-            solicitacoes.forEach(sol => {
-                const marcas = Object.entries(sol.marcas).filter(([_, v]) => v > 0).map(([m, v]) => `${m}: ${v}`).join('<br>');
-                const statusClass = sol.status === 'Atendido' ? 'btn-success' : 'btn-warning';
-                tabela.innerHTML += `
-                    <tr>
-                        <td>${sol.data}</td>
-                        <td>${sol.tipo}</td>
-                        <td>${sol.itens}</td>
-                        <td>${marcas || 'N/D'}</td>
-                        <td><button class="btn ${statusClass}" style="padding: 6px 12px; font-size: 0.8rem;" onclick="atualizarStatus(event, ${sol.rowIndex}, '${sol.status}')">${sol.status}</button></td>
-                    </tr>`;
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        // CORREÇÃO: Adicionando cor aos textos da legenda
+                        legend: { 
+                            position: 'bottom', 
+                            labels: { color: 'var(--text-secondary)' } 
+                        } 
+                    } 
+                }
             });
         }
 
@@ -301,6 +319,7 @@
         }
     </script>
 </html>
+
 
 
 
