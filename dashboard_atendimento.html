@@ -17,7 +17,7 @@
         body { background: linear-gradient(135deg, var(--dark) 0%, #1e293b 100%); color: var(--text); min-height: 100vh; }
         .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
         header { text-align: center; margin-bottom: 30px; padding: 30px; background: rgba(30, 41, 59, 0.8); border-radius: var(--border-radius); }
-        h1 { font-size: 2.5rem; margin-bottom: 10px; color: var(--accent); } /* Título alterado */
+        h1 { font-size: 2.5rem; margin-bottom: 10px; color: var(--accent); }
         .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; background: var(--card-bg); padding: 15px; border-radius: var(--border-radius); }
         .nav-tab { padding: 12px 24px; background: rgba(255,255,255,0.1); border: none; color: var(--text); border-radius: 8px; cursor: pointer; transition: all 0.3s; }
         .nav-tab.active { background: var(--secondary); color: white; }
@@ -133,19 +133,16 @@
         // ####################################################################
         // IMPORTANTE: COLE A URL DO SEU APLICATIVO WEB DO GOOGLE AQUI
         // ####################################################################
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxwiJzx5fn9i1GqDRuoVa-oLXkLlMGJbihXXojvK5Y1VZA8Ah_3v_VjoZGWNSQQlp-iUw/exec';
+        const WEB_APP_URL = 'COLE_A_SUA_URL_AQUI';
 
-        // Variáveis globais para os gráficos, para que possam ser destruídos e recriados.
         let origemChart, marcaChart;
 
-        // Função que roda assim que a página termina de carregar.
         document.addEventListener('DOMContentLoaded', function() {
             carregarDados();
             document.getElementById('form-solicitacao').addEventListener('submit', salvarSolicitacao);
-            document.getElementById('data-solicitacao').valueAsDate = new Date(); // Define a data de hoje no formulário.
+            document.getElementById('data-solicitacao').valueAsDate = new Date();
         });
 
-        // Controla a navegação por abas.
         function openTab(event, tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
@@ -153,12 +150,11 @@
             event.currentTarget.classList.add('active');
         }
 
-        // Função principal que busca os dados da planilha Google.
         async function carregarDados() {
             document.getElementById('tabela-status').innerHTML = `<tr><td colspan="5"><div class="loader"></div></td></tr>`;
             document.getElementById('tabela-historico').innerHTML = `<tr><td colspan="5"><div class="loader"></div></td></tr>`;
             
-            if (WEB_APP_URL === 'https://script.google.com/macros/s/AKfycbxwiJzx5fn9i1GqDRuoVa-oLXkLlMGJbihXXojvK5Y1VZA8Ah_3v_VjoZGWNSQQlp-iUw/exec') {
+            if (WEB_APP_URL === 'COLE_A_SUA_URL_AQUI') {
                 alert('ERRO: Você precisa colar a URL do seu Google Apps Script na variável WEB_APP_URL.');
                 return;
             }
@@ -186,7 +182,6 @@
             }
         }
 
-        // Atualiza os cards e a tabela de status no dashboard.
         function atualizarDashboard(dados, marcas, historico) {
             const totalSeparados = Object.values(dados).reduce((sum, item) => sum + item.separados, 0);
             const totalFila = Object.values(dados).reduce((sum, item) => sum + item.fila, 0);
@@ -209,7 +204,6 @@
             }
         }
 
-        // Cria e atualiza os gráficos com as cores corrigidas.
         function atualizarGraficos(dados, marcas) {
             if (origemChart) origemChart.destroy();
             if (marcaChart) marcaChart.destroy();
@@ -220,8 +214,8 @@
                 data: {
                     labels: Object.keys(dados),
                     datasets: [
-                        { label: 'Itens Separados', data: Object.values(dados).map(d => d.separados), backgroundColor: 'rgba(59, 130, 246, 0.8)' }, // Azul
-                        { label: 'Peças em Fila', data: Object.values(dados).map(d => d.fila), backgroundColor: 'rgba(245, 158, 11, 0.8)' }  // Laranja
+                        { label: 'Itens Separados', data: Object.values(dados).map(d => d.separados), backgroundColor: 'rgba(59, 130, 246, 0.8)' },
+                        { label: 'Peças em Fila', data: Object.values(dados).map(d => d.fila), backgroundColor: 'rgba(245, 158, 11, 0.8)' }
                     ]
                 },
                 options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: 'var(--text-secondary)' }, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { ticks: { color: 'var(--text-secondary)' }, grid: { display: false } } }, plugins: { legend: { labels: { color: 'var(--text-secondary)' } } } }
@@ -238,7 +232,6 @@
             });
         }
 
-        // Constrói a tabela de histórico com botões de status.
         function carregarHistorico(solicitacoes) {
             const tabela = document.getElementById('tabela-historico');
             if (!solicitacoes || solicitacoes.length === 0) {
@@ -260,7 +253,6 @@
             });
         }
 
-        // Envia uma nova solicitação para a planilha.
         async function salvarSolicitacao(event) {
             event.preventDefault();
             const btn = event.target.querySelector('button[type="submit"]');
@@ -277,7 +269,7 @@
                 alert('Solicitação enviada com sucesso! Atualizando o dashboard...');
                 document.getElementById('form-solicitacao').reset();
                 document.getElementById('data-solicitacao').valueAsDate = new Date();
-                openTab({currentTarget: document.querySelector('.nav-tab.active')}, 'dashboard'); // Volta para o dashboard
+                openTab({currentTarget: document.querySelector('.nav-tab.active')}, 'dashboard');
             } catch (error) {
                 console.error('Erro ao salvar:', error);
                 alert('Falha ao salvar a solicitação.');
@@ -288,28 +280,25 @@
             }
         }
 
-        // Envia uma atualização de status para a planilha.
         async function atualizarStatus(event, rowIndex, currentStatus) {
             const newStatus = currentStatus === 'Pendente' ? 'Atendido' : 'Pendente';
             const button = event.target;
             button.disabled = true;
             button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             try {
-                await fetch(https://script.google.com/macros/s/AKfycbxwiJzx5fn9i1GqDRuoVa-oLXkLlMGJbihXXojvK5Y1VZA8Ah_3v_VjoZGWNSQQlp-iUw/exec, {
+                await fetch(WEB_APP_URL, {
                     method: 'POST',
                     mode: 'no-cors',
                     body: JSON.stringify({ action: 'updateStatus', rowIndex: rowIndex, newStatus: newStatus })
                 });
-                carregarDados(); // Recarrega todos os dados para refletir a mudança.
+                carregarDados();
             } catch (error) {
                 console.error('Erro ao atualizar status:', error);
                 alert('Falha ao atualizar o status.');
                 button.disabled = false;
-                button.innerHTML = currentStatus; // Reverte o botão em caso de erro.
+                button.innerHTML = currentStatus;
             }
         }
     </script>
 </body>
 </html>
-
-
