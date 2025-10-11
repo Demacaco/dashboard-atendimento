@@ -265,7 +265,7 @@
                 marcas: { zontes: parseInt(document.getElementById('zontes').value), suzuki: parseInt(document.getElementById('suzuki').value), haojue: parseInt(document.getElementById('haojue').value), kimco: parseInt(document.getElementById('kimco').value), hisun: parseInt(document.getElementById('hisun').value) }
             };
             try {
-                await fetch(https://script.google.com/macros/s/AKfycbxwiJzx5fn9i1GqDRuoVa-oLXkLlMGJbihXXojvK5Y1VZA8Ah_3v_VjoZGWNSQQlp-iUw/exec, { method: 'POST', mode: 'no-cors', body: JSON.stringify(solicitacao) });
+                await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(solicitacao) });
                 alert('Solicitação enviada com sucesso! Atualizando o dashboard...');
                 document.getElementById('form-solicitacao').reset();
                 document.getElementById('data-solicitacao').valueAsDate = new Date();
