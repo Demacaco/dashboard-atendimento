@@ -130,8 +130,9 @@
     </div>
 
     <script>
+        <script>
         // ####################################################################
-        // IMPORTANTE: COLE A URL DO SEU APLICATIVO WEB DO GOOGLE AQUI
+        // IMPORTANTE: VERIFIQUE SE A SUA URL ESTÁ CORRETA AQUI
         // ####################################################################
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxwiJzx5fn9i1GqDRuoVa-oLXkLlMGJbihXXojvK5Y1VZA8Ah_3v_VjoZGWNSQQlp-iUw/exec';
 
@@ -154,10 +155,7 @@
             document.getElementById('tabela-status').innerHTML = `<tr><td colspan="5"><div class="loader"></div></td></tr>`;
             document.getElementById('tabela-historico').innerHTML = `<tr><td colspan="5"><div class="loader"></div></td></tr>`;
             
-            if (WEB_APP_URL === 'https://script.google.com/macros/s/AKfycbxwiJzx5fn9i1GqDRuoVa-oLXkLlMGJbihXXojvK5Y1VZA8Ah_3v_VjoZGWNSQQlp-iUw/exec') {
-                alert('ERRO: Você precisa colar a URL do seu Google Apps Script na variável WEB_APP_URL.');
-                return;
-            }
+            // O bloco IF problemático foi REMOVIDO daqui.
 
             try {
                 const response = await fetch(WEB_APP_URL);
@@ -300,5 +298,5 @@
             }
         }
     </script>
-</body>
 </html>
+
