@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pedidos de Atendimento A BOs  - Peças Estoque</title>
+    <title>Sistema de Atendimento - Logística</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -16,87 +16,43 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background: linear-gradient(135deg, var(--dark) 0%, #1e293b 100%); color: var(--text); min-height: 100vh; }
         .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-        
-        /* Header */
         header { text-align: center; margin-bottom: 30px; padding: 30px; background: rgba(30, 41, 59, 0.8); border-radius: var(--border-radius); }
         h1 { font-size: 2.5rem; margin-bottom: 10px; background: linear-gradient(90deg, var(--secondary), var(--accent)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        
-        /* Navigation */
         .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; background: var(--card-bg); padding: 15px; border-radius: var(--border-radius); }
         .nav-tab { padding: 12px 24px; background: rgba(255,255,255,0.1); border: none; color: var(--text); border-radius: 8px; cursor: pointer; transition: all 0.3s; }
         .nav-tab.active { background: var(--secondary); color: white; }
         .nav-tab:hover { background: var(--secondary); transform: translateY(-2px); }
-        
-        /* Cards */
         .card { background: var(--card-bg); border-radius: var(--border-radius); padding: 25px; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .card-title { font-size: 1.4rem; font-weight: 600; color: var(--text); }
-        
-        /* Forms */
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .form-group { display: flex; flex-direction: column; }
         .form-label { margin-bottom: 8px; font-weight: 500; color: var(--text-secondary); }
         .form-input, .form-select { padding: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); border-radius: 8px; color: var(--text); font-size: 1rem; }
         .form-input:focus, .form-select:focus { outline: none; border-color: var(--secondary); }
-        
-        /* Buttons */
         .btn { padding: 12px 24px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; }
         .btn-primary { background: var(--secondary); color: white; }
         .btn-success { background: var(--success); color: white; }
         .btn-warning { background: var(--warning); color: white; }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        
-        /* Tables */
         .data-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
         .data-table th { background: linear-gradient(45deg, var(--primary), var(--secondary)); color: white; padding: 15px; text-align: center; font-weight: 600; }
         .data-table td { padding: 12px 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .data-table tr:hover { background: rgba(255,255,255,0.05); }
-        
-        /* Charts */
         .charts-container { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 30px; }
         .chart-card { background: var(--card-bg); border-radius: var(--border-radius); padding: 25px; height: 400px; display: flex; flex-direction: column; }
         .chart-container { height: 300px; position: relative; flex: 1; }
-        
-        /* Timeline */
-        .timeline { position: relative; max-width: 100%; margin: 20px 0; }
-        .timeline::after { content: ''; position: absolute; width: 4px; background: var(--secondary); top: 0; bottom: 0; left: 50%; margin-left: -2px; }
-        .timeline-item { padding: 10px 40px; position: relative; width: 50%; box-sizing: border-box; }
-        .timeline-item::after { content: ''; position: absolute; width: 20px; height: 20px; background: var(--card-bg); border: 4px solid var(--secondary); border-radius: 50%; top: 15px; z-index: 1; }
-        .timeline-item:nth-child(odd) { left: 0; }
-        .timeline-item:nth-child(even) { left: 50%; }
-        .timeline-item:nth-child(odd)::after { right: -10px; }
-        .timeline-item:nth-child(even)::after { left: -10px; }
-        .timeline-content { padding: 20px; background: rgba(255,255,255,0.05); border-radius: 8px; }
-        
-        /* Stats */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 20px 0; }
         .stat-card { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 8px; text-align: center; }
         .stat-value { font-size: 2.5rem; font-weight: 700; margin: 10px 0; }
         .stat-label { color: var(--text-secondary); font-size: 0.9rem; }
-        
-        /* Progress bars */
         .progress-bar { height: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; overflow: hidden; margin: 10px 0; }
         .progress-fill { height: 100%; border-radius: 5px; transition: width 1.5s ease-in-out; }
-        
-        /* Tabs content */
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-
-        .loader {
-            border: 5px solid #f3f3f3; border-top: 5px solid var(--secondary);
-            border-radius: 50%; width: 50px; height: 50px;
-            animation: spin 1s linear infinite; margin: 20px auto;
-        }
+        .loader { border: 5px solid #f3f3f3; border-top: 5px solid var(--secondary); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        @media (max-width: 768px) {
-            .charts-container { grid-template-columns: 1fr; }
-            .form-grid { grid-template-columns: 1fr; }
-            .timeline::after { left: 31px; }
-            .timeline-item { width: 100%; padding-left: 70px; padding-right: 25px; }
-            .timeline-item::after { left: 21px; }
-            .timeline-item:nth-child(even) { left: 0; }
-        }
+        @media (max-width: 768px) { .charts-container, .form-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -107,136 +63,56 @@
         </header>
         
         <div class="nav-tabs">
-            <button class="nav-tab active" onclick="openTab(event, 'dashboard')">
-                <i class="fas fa-tachometer-alt"></i> Dashboard
-            </button>
-            <button class="nav-tab" onclick="openTab(event, 'solicitacoes')">
-                <i class="fas fa-plus-circle"></i> Nova Solicitação
-            </button>
-            <button class="nav-tab" onclick="openTab(event, 'historico')">
-                <i class="fas fa-history"></i> Histórico
-            </button>
+            <button class="nav-tab active" onclick="openTab(event, 'dashboard')"><i class="fas fa-tachometer-alt"></i> Dashboard</button>
+            <button class="nav-tab" onclick="openTab(event, 'solicitacoes')"><i class="fas fa-plus-circle"></i> Nova Solicitação</button>
+            <button class="nav-tab" onclick="openTab(event, 'historico')"><i class="fas fa-history"></i> Histórico</button>
         </div>
         
         <div id="dashboard" class="tab-content active">
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">Resumo do Atendimento</h2>
-                    <button class="btn btn-primary" onclick="carregarDados()">
-                        <i class="fas fa-sync-alt"></i> Atualizar
-                    </button>
+                    <button class="btn btn-primary" onclick="carregarDados()"><i class="fas fa-sync-alt"></i> Atualizar</button>
                 </div>
-                
                 <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-label">Itens Separados</div>
-                        <div id="total-separados" class="stat-value">0</div>
-                        <div class="progress-bar">
-                            <div id="progress-separados" class="progress-fill" style="width: 0%; background: var(--success);"></div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Peças em Fila</div>
-                        <div id="total-fila" class="stat-value">0</div>
-                        <div class="progress-bar">
-                            <div id="progress-fila" class="progress-fill" style="width: 0%; background: var(--warning);"></div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Total de Itens</div>
-                        <div id="total-geral" class="stat-value">0</div>
-                        <div class="progress-bar">
-                            <div id="progress-total" class="progress-fill" style="width: 0%; background: var(--secondary);"></div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Solicitações no Histórico</div>
-                        <div id="total-solicitacoes" class="stat-value">0</div>
-                         <div class="progress-bar">
-                            <div id="progress-solicitacoes" class="progress-fill" style="width: 100%; background: var(--accent);"></div>
-                        </div>
-                    </div>
+                    <div class="stat-card"><div class="stat-label">Itens Separados</div><div id="total-separados" class="stat-value">0</div><div class="progress-bar"><div id="progress-separados" class="progress-fill" style="width: 0%; background: var(--success);"></div></div></div>
+                    <div class="stat-card"><div class="stat-label">Peças em Fila</div><div id="total-fila" class="stat-value">0</div><div class="progress-bar"><div id="progress-fila" class="progress-fill" style="width: 0%; background: var(--warning);"></div></div></div>
+                    <div class="stat-card"><div class="stat-label">Total de Itens</div><div id="total-geral" class="stat-value">0</div><div class="progress-bar"><div id="progress-total" class="progress-fill" style="width: 0%; background: var(--secondary);"></div></div></div>
+                    <div class="stat-card"><div class="stat-label">Solicitações no Histórico</div><div id="total-solicitacoes" class="stat-value">0</div><div class="progress-bar"><div id="progress-solicitacoes" class="progress-fill" style="width: 100%; background: var(--accent);"></div></div></div>
                 </div>
             </div>
-            
             <div class="charts-container">
-                <div class="chart-card">
-                    <h3 class="card-title">Distribuição por Tipo</h3>
-                    <div class="chart-container">
-                        <canvas id="origemChart"></canvas>
-                    </div>
-                </div>
-                <div class="chart-card">
-                    <h3 class="card-title">Distribuição por Marca</h3>
-                    <div class="chart-container">
-                        <canvas id="marcaChart"></canvas>
-                    </div>
-                </div>
+                <div class="chart-card"><h3 class="card-title">Distribuição por Tipo</h3><div class="chart-container"><canvas id="origemChart"></canvas></div></div>
+                <div class="chart-card"><h3 class="card-title">Distribuição por Marca</h3><div class="chart-container"><canvas id="marcaChart"></canvas></div></div>
             </div>
-            
             <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Status por Tipo de Atendimento</h2>
-                </div>
+                <div class="card-header"><h2 class="card-title">Status por Tipo de Atendimento</h2></div>
                 <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Tipo</th>
-                            <th>Itens Separados</th>
-                            <th>Peças em Fila</th>
-                            <th>Total</th>
-                            <th>Progresso</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabela-status">
-                        <tr><td colspan="5" style="text-align: center; padding: 20px;"><div class="loader"></div></td></tr>
-                    </tbody>
+                    <thead><tr><th>Tipo</th><th>Itens Separados</th><th>Peças em Fila</th><th>Total</th><th>Progresso</th></tr></thead>
+                    <tbody id="tabela-status"></tbody>
                 </table>
             </div>
         </div>
         
         <div id="solicitacoes" class="tab-content">
             <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Nova Solicitação de Atendimento</h2>
-                </div>
-                
+                <div class="card-header"><h2 class="card-title">Nova Solicitação de Atendimento</h2></div>
                 <form id="form-solicitacao">
                     <div class="form-grid">
-                        <div class="form-group">
-                            <label class="form-label">Data da Solicitação</label>
-                            <input type="date" class="form-input" id="data-solicitacao" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Tipo de Atendimento</label>
-                            <select class="form-select" id="tipo-atendimento" required>
-                                <option value="">Selecione...</option>
-                                <option value="A4">A4</option>
-                                <option value="Concessionárias">Concessionárias</option>
-                                <option value="Garantias">Garantias</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Itens Solicitados</label>
-                            <input type="number" class="form-input" id="itens-solicitados" min="1" required>
-                        </div>
+                        <div class="form-group"><label class="form-label">Data da Solicitação</label><input type="date" class="form-input" id="data-solicitacao" required></div>
+                        <div class="form-group"><label class="form-label">Tipo</label><select class="form-select" id="tipo-atendimento" required><option value="">Selecione...</option><option value="A4">A4</option><option value="Concessionárias">Concessionárias</option><option value="Garantias">Garantias</option></select></div>
+                        <div class="form-group"><label class="form-label">Itens Solicitados</label><input type="number" class="form-input" id="itens-solicitados" min="1" required></div>
                     </div>
-                    
                     <div class="form-grid">
                         <div class="form-group"><label class="form-label">Zontes</label><input type="number" class="form-input" id="zontes" min="0" value="0"></div>
                         <div class="form-group"><label class="form-label">Suzuki</label><input type="number" class="form-input" id="suzuki" min="0" value="0"></div>
                         <div class="form-group"><label class="form-label">Haojue</label><input type="number" class="form-input" id="haojue" min="0" value="0"></div>
-                        <div class="form-group"><label class="form-label">Kymco</label><input type="number" class="form-input" id="kimco" min="0" value="0"></div>
+                        <div class="form-group"><label class="form-label">Kimco</label><input type="number" class="form-input" id="kimco" min="0" value="0"></div>
                         <div class="form-group"><label class="form-label">Hisun</label><input type="number" class="form-input" id="hisun" min="0" value="0"></div>
                     </div>
-                                        
                     <div style="margin-top: 20px; display: flex; gap: 10px;">
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-save"></i> Salvar Solicitação
-                        </button>
-                        <button type="reset" class="btn btn-warning">
-                            <i class="fas fa-undo"></i> Limpar
-                        </button>
+                        <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Salvar Solicitação</button>
+                        <button type="reset" class="btn btn-warning"><i class="fas fa-undo"></i> Limpar</button>
                     </div>
                 </form>
             </div>
@@ -244,171 +120,170 @@
         
         <div id="historico" class="tab-content">
             <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Histórico de Solicitações</h2>
-                </div>
+                <div class="card-header"><h2 class="card-title">Histórico de Solicitações</h2></div>
                 <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Tipo</th>
-                            <th>Itens</th>
-                            <th>Marcas</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabela-historico">
-                        <tr><td colspan="5" style="text-align: center; padding: 20px;"><div class="loader"></div></td></tr>
-                    </tbody>
+                    <thead><tr><th>Data</th><th>Tipo</th><th>Itens</th><th>Marcas</th><th>Status</th></tr></thead>
+                    <tbody id="tabela-historico"></tbody>
                 </table>
             </div>
         </div>
-        
     </div>
 
-<script>
-    // ####################################################################
-    // IMPORTANTE: VERIFIQUE SE A SUA URL ESTÁ CORRETA AQUI
-    // ####################################################################
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxwUph5B36WprElyn1-dLvZ69eFkhGoSYduhkysO1xYcDMHodiWL8I0go8Fh74YCmxc0g/exec'; // Substitua se necessário
+    <script>
+        // ####################################################################
+        // IMPORTANTE: COLE A URL DO SEU APLICATIVO WEB DO GOOGLE AQUI
+        // ####################################################################
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxwiJzx5fn9i1GqDRuoVa-oLXkLlMGJbihXXojvK5Y1VZA8Ah_3v_VjoZGWNSQQlp-iUw/exec';
 
-    // Variáveis globais dos gráficos
-    let origemChart, marcaChart;
+        let origemChart, marcaChart;
 
-    // Função executada quando a página carrega
-    document.addEventListener('DOMContentLoaded', function() {
-        carregarDados();
-        document.getElementById('form-solicitacao').addEventListener('submit', salvarSolicitacao);
-        document.getElementById('data-solicitacao').valueAsDate = new Date();
-    });
-
-    // Funções de navegação entre abas
-    function openTab(event, tabName) {
-        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-        document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
-        document.getElementById(tabName).classList.add('active');
-        event.currentTarget.classList.add('active');
-    }
-
-    // Função principal para carregar dados da planilha
-    async function carregarDados() {
-        document.getElementById('tabela-status').innerHTML = '<tr><td colspan="5"><div class="loader"></div></td></tr>';
-        document.getElementById('tabela-historico').innerHTML = '<tr><td colspan="5"><div class="loader"></div></td></tr>';
-        
-        if (WEB_APP_URL === 'COLE_A_SUA_URL_AQUI') {
-            alert('ERRO: Você precisa colar a URL do seu Google Apps Script na variável WEB_APP_URL no código HTML.');
-            return;
-        }
-
-        try {
-            const response = await fetch(WEB_APP_URL);
-            if (!response.ok) { // Verifica se a requisição foi bem-sucedida (status 200)
-                throw new Error(`Erro de rede: ${response.statusText}`);
-            }
-            const data = await response.json();
-
-            if (data.error) {
-                throw new Error(data.error);
-            }
-            
-            const dadosDashboard = data.dadosOrigem.reduce((obj, item) => {
-                obj[item.tipo] = { separados: item.separados, fila: item.fila, total: item.total };
-                return obj;
-            }, {});
-
-            atualizarDashboard(dadosDashboard, data.dadosMarca, data.dadosHistorico);
-            atualizarGraficos(dadosDashboard, data.dadosMarca);
-            carregarHistorico(data.dadosHistorico);
-
-        } catch (error) {
-            console.error('Falha ao carregar dados:', error);
-            alert('Não foi possível carregar os dados da planilha. Verifique o console (F12) para mais detalhes. Pode ser um erro de CORS.');
-            document.getElementById('tabela-status').innerHTML = '<tr><td colspan="5">Erro ao carregar dados.</td></tr>';
-            document.getElementById('tabela-historico').innerHTML = '<tr><td colspan="5">Erro ao carregar dados.</td></tr>';
-        }
-    }
-
-    // Atualiza os cards, barras de progresso e a tabela de status
-    function atualizarDashboard(dados, marcas, historico) {
-        const totalSeparados = Object.values(dados).reduce((sum, item) => sum + item.separados, 0);
-        const totalFila = Object.values(dados).reduce((sum, item) => sum + item.fila, 0);
-        const totalGeral = totalSeparados + totalFila;
-        
-        document.getElementById('total-separados').textContent = totalSeparados;
-        document.getElementById('total-fila').textContent = totalFila;
-        document.getElementById('total-geral').textContent = totalGeral;
-        document.getElementById('total-solicitacoes').textContent = historico ? historico.length : 0;
-        
-        document.getElementById('progress-separados').style.width = totalGeral > 0 ? `${(totalSeparados / totalGeral) * 100}%` : '0%';
-        document.getElementById('progress-fila').style.width = totalGeral > 0 ? `${(totalFila / totalGeral) * 100}%` : '0%';
-        document.getElementById('progress-total').style.width = '100%';
-        
-        const tabelaStatus = document.getElementById('tabela-status');
-        tabelaStatus.innerHTML = '';
-        
-        for (const [tipo, valores] of Object.entries(dados)) {
-            const progresso = valores.total > 0 ? (valores.separados / valores.total) * 100 : 0;
-            tabelaStatus.innerHTML += `<tr><td style="text-align: left; font-weight: 600;">${tipo}</td><td>${valores.separados}</td><td>${valores.fila}</td><td>${valores.total}</td><td><div class="progress-bar"><div class="progress-fill" style="width: ${progresso}%; background: var(--success);"></div></div><small>${progresso.toFixed(1)}%</small></td></tr>`;
-        }
-    }
-
-    // Atualiza os gráficos
-    function atualizarGraficos(dados, marcas) {
-        const ctxOrigem = document.getElementById('origemChart').getContext('2d');
-        const ctxMarca = document.getElementById('marcaChart').getContext('2d');
-        if (origemChart) origemChart.destroy();
-        if (marcaChart) marcaChart.destroy();
-        origemChart = new Chart(ctxOrigem, { type: 'bar', data: { labels: Object.keys(dados), datasets: [{ label: 'Itens Separados', data: Object.values(dados).map(d => d.separados), backgroundColor: '#10b981' }, { label: 'Peças em Fila', data: Object.values(dados).map(d => d.fila), backgroundColor: '#f59e0b' }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } });
-        marcaChart = new Chart(ctxMarca, { type: 'doughnut', data: { labels: Object.keys(marcas), datasets: [{ data: Object.values(marcas), backgroundColor: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#64748b'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
-    }
-
-    // Salva uma nova solicitação na planilha
-    async function salvarSolicitacao(event) {
-        event.preventDefault();
-        const btn = event.target.querySelector('button[type="submit"]');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
-        const solicitacao = {
-            data: document.getElementById('data-solicitacao').value,
-            tipo: document.getElementById('tipo-atendimento').value,
-            itens: parseInt(document.getElementById('itens-solicitados').value),
-            marcas: { zontes: parseInt(document.getElementById('zontes').value), suzuki: parseInt(document.getElementById('suzuki').value), haojue: parseInt(document.getElementById('haojue').value), kymco: parseInt(document.getElementById('kimco').value), hisun: parseInt(document.getElementById('hisun').value) }
-        };
-        try {
-            await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(solicitacao) });
-            alert('Solicitação enviada com sucesso! Os dados serão atualizados em breve.');
-            document.getElementById('form-solicitacao').reset();
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarDados();
+            document.getElementById('form-solicitacao').addEventListener('submit', salvarSolicitacao);
             document.getElementById('data-solicitacao').valueAsDate = new Date();
-        } catch (error) {
-            console.error('Erro ao salvar solicitação:', error);
-            alert('Falha ao salvar a solicitação.');
-        } finally {
-             btn.disabled = false;
-             btn.innerHTML = '<i class="fas fa-save"></i> Salvar Solicitação';
-             carregarDados();
-        }
-    }
-
-    // Carrega e exibe a tabela de histórico
-    function carregarHistorico(solicitacoes) {
-        const tabela = document.getElementById('tabela-historico');
-        if (!solicitacoes || solicitacoes.length === 0) {
-            tabela.innerHTML = '<tr><td colspan="5">Nenhuma solicitação encontrada</td></tr>';
-            return;
-        }
-        tabela.innerHTML = '';
-        solicitacoes.forEach(sol => {
-            const marcas = Object.entries(sol.marcas).filter(([_, valor]) => valor > 0).map(([marca, valor]) => `${marca}: ${valor}`).join('<br>');
-            tabela.innerHTML += `<tr><td>${sol.data}</td><td>${sol.tipo}</td><td>${sol.itens}</td><td>${marcas || 'N/D'}</td><td><span style="padding: 4px 8px; background: var(--warning); border-radius: 4px;">${sol.status}</span></td></tr>`;
         });
-    }
-</script>
 
+        function openTab(event, tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        async function carregarDados() {
+            document.getElementById('tabela-status').innerHTML = `<tr><td colspan="5"><div class="loader"></div></td></tr>`;
+            document.getElementById('tabela-historico').innerHTML = `<tr><td colspan="5"><div class="loader"></div></td></tr>`;
+            
+            if (WEB_APP_URL === 'COLE_A_SUA_URL_AQUI') {
+                alert('ERRO: Você precisa colar a URL do seu Google Apps Script na variável WEB_APP_URL no código HTML.');
+                return;
+            }
+
+            try {
+                const response = await fetch(WEB_APP_URL);
+                if (!response.ok) throw new Error(`Erro de rede: ${response.statusText}`);
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+                
+                const dadosDashboard = data.dadosOrigem.reduce((obj, item) => {
+                    obj[item.tipo] = { separados: item.separados, fila: item.fila, total: item.total };
+                    return obj;
+                }, {});
+
+                atualizarDashboard(dadosDashboard, data.dadosMarca, data.dadosHistorico);
+                atualizarGraficos(dadosDashboard, data.dadosMarca);
+                carregarHistorico(data.dadosHistorico);
+
+            } catch (error) {
+                console.error('Falha ao carregar dados:', error);
+                alert('Não foi possível carregar os dados da planilha. Verifique o console (F12) para mais detalhes.');
+                document.getElementById('tabela-status').innerHTML = '<tr><td colspan="5">Erro ao carregar dados.</td></tr>';
+                document.getElementById('tabela-historico').innerHTML = '<tr><td colspan="5">Erro ao carregar dados.</td></tr>';
+            }
+        }
+
+        function atualizarDashboard(dados, marcas, historico) {
+            const totalSeparados = Object.values(dados).reduce((sum, item) => sum + item.separados, 0);
+            const totalFila = Object.values(dados).reduce((sum, item) => sum + item.fila, 0);
+            const totalGeral = totalSeparados + totalFila;
+            
+            document.getElementById('total-separados').textContent = totalSeparados;
+            document.getElementById('total-fila').textContent = totalFila;
+            document.getElementById('total-geral').textContent = totalGeral;
+            document.getElementById('total-solicitacoes').textContent = historico ? historico.length : 0;
+            
+            document.getElementById('progress-separados').style.width = totalGeral > 0 ? `${(totalSeparados / totalGeral) * 100}%` : '0%';
+            document.getElementById('progress-fila').style.width = totalGeral > 0 ? `${(totalFila / totalGeral) * 100}%` : '0%';
+            document.getElementById('progress-total').style.width = '100%';
+            
+            const tabelaStatus = document.getElementById('tabela-status');
+            tabelaStatus.innerHTML = '';
+            for (const [tipo, valores] of Object.entries(dados)) {
+                const progresso = valores.total > 0 ? (valores.separados / valores.total) * 100 : 0;
+                tabelaStatus.innerHTML += `<tr><td style="text-align: left; font-weight: 600;">${tipo}</td><td>${valores.separados}</td><td>${valores.fila}</td><td>${valores.total}</td><td><div class="progress-bar"><div class="progress-fill" style="width: ${progresso}%; background: var(--success);"></div></div><small>${progresso.toFixed(1)}%</small></td></tr>`;
+            }
+        }
+
+        function atualizarGraficos(dados, marcas) {
+            const ctxOrigem = document.getElementById('origemChart').getContext('2d');
+            const ctxMarca = document.getElementById('marcaChart').getContext('2d');
+            if (origemChart) origemChart.destroy();
+            if (marcaChart) marcaChart.destroy();
+            origemChart = new Chart(ctxOrigem, { type: 'bar', data: { labels: Object.keys(dados), datasets: [{ label: 'Itens Separados', data: Object.values(dados).map(d => d.separados), backgroundColor: 'var(--success)' }, { label: 'Peças em Fila', data: Object.values(dados).map(d => d.fila), backgroundColor: 'var(--warning)' }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: 'var(--text-secondary)' } }, x: { ticks: { color: 'var(--text-secondary)' } } }, plugins: { legend: { labels: { color: 'var(--text-secondary)' } } } } });
+            marcaChart = new Chart(ctxMarca, { type: 'doughnut', data: { labels: Object.keys(marcas), datasets: [{ data: Object.values(marcas), backgroundColor: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#64748b'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: 'var(--text-secondary)' } } } } });
+        }
+
+        function carregarHistorico(solicitacoes) {
+            const tabela = document.getElementById('tabela-historico');
+            if (!solicitacoes || solicitacoes.length === 0) {
+                tabela.innerHTML = '<tr><td colspan="5">Nenhuma solicitação encontrada</td></tr>';
+                return;
+            }
+            tabela.innerHTML = '';
+            solicitacoes.forEach(sol => {
+                const marcas = Object.entries(sol.marcas).filter(([_, v]) => v > 0).map(([m, v]) => `${m}: ${v}`).join('<br>');
+                const statusClass = sol.status === 'Atendido' ? 'btn-success' : 'btn-warning';
+                tabela.innerHTML += `
+                    <tr>
+                        <td>${sol.data}</td>
+                        <td>${sol.tipo}</td>
+                        <td>${sol.itens}</td>
+                        <td>${marcas || 'N/D'}</td>
+                        <td>
+                            <button class="btn ${statusClass}" style="padding: 6px 12px; font-size: 0.8rem;" 
+                                onclick="atualizarStatus(event, ${sol.rowIndex}, '${sol.status}')">
+                                ${sol.status}
+                            </button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        async function salvarSolicitacao(event) {
+            event.preventDefault();
+            const btn = event.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+            const solicitacao = {
+                data: document.getElementById('data-solicitacao').value,
+                tipo: document.getElementById('tipo-atendimento').value,
+                itens: parseInt(document.getElementById('itens-solicitados').value),
+                marcas: { zontes: parseInt(document.getElementById('zontes').value), suzuki: parseInt(document.getElementById('suzuki').value), haojue: parseInt(document.getElementById('haojue').value), kimco: parseInt(document.getElementById('kimco').value), hisun: parseInt(document.getElementById('hisun').value) }
+            };
+            try {
+                await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(solicitacao) });
+                alert('Solicitação enviada com sucesso! Os dados serão atualizados em breve.');
+                document.getElementById('form-solicitacao').reset();
+                document.getElementById('data-solicitacao').valueAsDate = new Date();
+            } catch (error) {
+                console.error('Erro ao salvar:', error);
+                alert('Falha ao salvar a solicitação.');
+            } finally {
+                 btn.disabled = false;
+                 btn.innerHTML = '<i class="fas fa-save"></i> Salvar Solicitação';
+                 carregarDados();
+            }
+        }
+
+        async function atualizarStatus(event, rowIndex, currentStatus) {
+            const newStatus = currentStatus === 'Pendente' ? 'Atendido' : 'Pendente';
+            const button = event.target;
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({ action: 'updateStatus', rowIndex: rowIndex, newStatus: newStatus })
+                });
+                carregarDados();
+            } catch (error) {
+                console.error('Erro ao atualizar status:', error);
+                alert('Falha ao atualizar o status.');
+                button.disabled = false;
+                button.innerHTML = currentStatus;
+            }
+        }
     </script>
 </body>
 </html>
-
-
-
-
-
