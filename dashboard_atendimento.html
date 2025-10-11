@@ -130,197 +130,167 @@
     </div>
 
 <script>
-        // ####################################################################
-        // IMPORTANTE: COLE A URL DO SEU APLICATIVO WEB DO GOOGLE AQUI
-        // ####################################################################
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxwiJzx5fn9i1GqDRuoVa-oLXkLlMGJbihXXojvK5Y1VZA8Ah_3v_VjoZGWNSQQlp-iUw/exec';
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxwiJzx5fn9i1GqDRuoVa-oLXkLlMGJbihXXojvK5Y1VZA8Ah_3v_VjoZGWNSQQlp-iUw/exec';
 
-        let origemChart, marcaChart;
+    let origemChart, marcaChart;
 
-        document.addEventListener('DOMContentLoaded', function() {
-            carregarDados();
-            document.getElementById('form-solicitacao').addEventListener('submit', salvarSolicitacao);
-            document.getElementById('data-solicitacao').valueAsDate = new Date();
+    document.addEventListener('DOMContentLoaded', function() {
+        carregarDados();
+        document.getElementById('form-solicitacao').addEventListener('submit', salvarSolicitacao);
+        document.getElementById('data-solicitacao').valueAsDate = new Date();
+    });
+
+    function openTab(event, tabName) {
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+        document.getElementById(tabName).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+
+    async function carregarDados() {
+        document.getElementById('tabela-status').innerHTML = `<tr><td colspan="5"><div class="loader"></div></td></tr>`;
+        document.getElementById('tabela-historico').innerHTML = `<tr><td colspan="5"><div class="loader"></div></td></tr>`;
+        
+        try {
+            const response = await fetch(WEB_APP_URL);
+            if (!response.ok) throw new Error(`Erro de rede: ${response.statusText}`);
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+            
+            const dadosDashboard = data.dadosOrigem.reduce((obj, item) => {
+                obj[item.tipo] = { separados: item.separados, fila: item.fila, total: item.total };
+                return obj;
+            }, {});
+
+            atualizarDashboard(dadosDashboard, data.dadosMarca, data.dadosHistorico);
+            atualizarGraficos(dadosDashboard, data.dadosMarca);
+            carregarHistorico(data.dadosHistorico);
+
+        } catch (error) {
+            console.error('Falha ao carregar dados:', error);
+            alert('Não foi possível carregar os dados da planilha. Verifique o console (F12) para mais detalhes.');
+            document.getElementById('tabela-status').innerHTML = '<tr><td colspan="5">Erro ao carregar dados.</td></tr>';
+            document.getElementById('tabela-historico').innerHTML = '<tr><td colspan="5">Erro ao carregar dados.</td></tr>';
+        }
+    }
+
+    function atualizarDashboard(dados, marcas, historico) {
+        const totalSeparados = Object.values(dados).reduce((sum, item) => sum + item.separados, 0);
+        const totalFila = Object.values(dados).reduce((sum, item) => sum + item.fila, 0);
+        const totalGeral = totalSeparados + totalFila;
+        
+        document.getElementById('total-separados').textContent = totalSeparados;
+        document.getElementById('total-fila').textContent = totalFila;
+        document.getElementById('total-geral').textContent = totalGeral;
+        document.getElementById('total-solicitacoes').textContent = historico ? historico.length : 0;
+        
+        document.getElementById('progress-separados').style.width = totalGeral > 0 ? `${(totalSeparados / totalGeral) * 100}%` : '0%';
+        document.getElementById('progress-fila').style.width = totalGeral > 0 ? `${(totalFila / totalGeral) * 100}%` : '0%';
+        document.getElementById('progress-total').style.width = '100%';
+        
+        const tabelaStatus = document.getElementById('tabela-status');
+        tabelaStatus.innerHTML = '';
+        for (const [tipo, valores] of Object.entries(dados)) {
+            const progresso = valores.total > 0 ? (valores.separados / valores.total) * 100 : 0;
+            tabelaStatus.innerHTML += `<tr><td style="text-align: left; font-weight: 600;">${tipo}</td><td>${valores.separados}</td><td>${valores.fila}</td><td>${valores.total}</td><td><div class="progress-bar"><div class="progress-fill" style="width: ${progresso}%; background: var(--success);"></div></div><small>${progresso.toFixed(1)}%</small></td></tr>`;
+        }
+    }
+
+    function atualizarGraficos(dados, marcas) {
+        if (origemChart) origemChart.destroy();
+        if (marcaChart) marcaChart.destroy();
+
+        const ctxOrigem = document.getElementById('origemChart').getContext('2d');
+        origemChart = new Chart(ctxOrigem, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(dados),
+                datasets: [
+                    { label: 'Itens Separados', data: Object.values(dados).map(d => d.separados), backgroundColor: 'rgba(59, 130, 246, 0.8)' },
+                    { label: 'Peças em Fila', data: Object.values(dados).map(d => d.fila), backgroundColor: 'rgba(245, 158, 11, 0.8)' }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: 'var(--text-secondary)' }, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { ticks: { color: 'var(--text-secondary)' }, grid: { display: false } } }, plugins: { legend: { labels: { color: 'var(--text-secondary)' } } } }
         });
 
-        function openTab(event, tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
-            document.getElementById(tabName).classList.add('active');
-            event.currentTarget.classList.add('active');
+        const ctxMarca = document.getElementById('marcaChart').getContext('2d');
+        marcaChart = new Chart(ctxMarca, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(marcas),
+                datasets: [{ data: Object.values(marcas), backgroundColor: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#64748b'], borderColor: 'var(--card-bg)', borderWidth: 2 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: 'var(--text-secondary)' } } } }
+        });
+    }
+
+    function carregarHistorico(solicitacoes) {
+        const tabela = document.getElementById('tabela-historico');
+        if (!solicitacoes || solicitacoes.length === 0) {
+            tabela.innerHTML = '<tr><td colspan="5">Nenhuma solicitação encontrada</td></tr>';
+            return;
         }
+        tabela.innerHTML = '';
+        solicitacoes.forEach(sol => {
+            const marcas = Object.entries(sol.marcas).filter(([_, v]) => v > 0).map(([m, v]) => `${m}: ${v}`).join('<br>');
+            const statusClass = sol.status === 'Atendido' ? 'btn-success' : 'btn-warning';
+            tabela.innerHTML += `
+                <tr>
+                    <td>${sol.data}</td>
+                    <td>${sol.tipo}</td>
+                    <td>${sol.itens}</td>
+                    <td>${marcas || 'N/D'}</td>
+                    <td><button class="btn ${statusClass}" style="padding: 6px 12px; font-size: 0.8rem;" onclick="atualizarStatus(event, ${sol.rowIndex}, '${sol.status}')">${sol.status}</button></td>
+                </tr>`;
+        });
+    }
 
-        async function carregarDados() {
-            document.getElementById('tabela-status').innerHTML = `<tr><td colspan="5"><div class="loader"></div></td></tr>`;
-            document.getElementById('tabela-historico').innerHTML = `<tr><td colspan="5"><div class="loader"></div></td></tr>`;
-            
-            if (WEB_APP_URL === 'https://script.google.com/macros/s/AKfycbxwiJzx5fn9i1GqDRuoVa-oLXkLlMGJbihXXojvK5Y1VZA8Ah_3v_VjoZGWNSQQlp-iUw/exec') {
-                alert('ERRO: Você precisa colar a URL do seu Google Apps Script na variável WEB_APP_URL.');
-                return;
-            }
-
-            try {
-                const response = await fetch(WEB_APP_URL);
-                if (!response.ok) throw new Error(`Erro de rede: ${response.statusText}`);
-                const data = await response.json();
-                if (data.error) throw new Error(data.error);
-                
-                const dadosDashboard = data.dadosOrigem.reduce((obj, item) => {
-                    obj[item.tipo] = { separados: item.separados, fila: item.fila, total: item.total };
-                    return obj;
-                }, {});
-
-                atualizarDashboard(dadosDashboard, data.dadosMarca, data.dadosHistorico);
-                atualizarGraficos(dadosDashboard, data.dadosMarca);
-                carregarHistorico(data.dadosHistorico);
-
-            } catch (error) {
-                console.error('Falha ao carregar dados:', error);
-                alert('Não foi possível carregar os dados da planilha. Verifique o console (F12) para mais detalhes.');
-                document.getElementById('tabela-status').innerHTML = '<tr><td colspan="5">Erro ao carregar dados.</td></tr>';
-                document.getElementById('tabela-historico').innerHTML = '<tr><td colspan="5">Erro ao carregar dados.</td></tr>';
-            }
+    async function salvarSolicitacao(event) {
+        event.preventDefault();
+        const btn = event.target.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+        const solicitacao = {
+            data: document.getElementById('data-solicitacao').value,
+            tipo: document.getElementById('tipo-atendimento').value,
+            itens: parseInt(document.getElementById('itens-solicitados').value),
+            marcas: { zontes: parseInt(document.getElementById('zontes').value), suzuki: parseInt(document.getElementById('suzuki').value), haojue: parseInt(document.getElementById('haojue').value), kimco: parseInt(document.getElementById('kimco').value), hisun: parseInt(document.getElementById('hisun').value) }
+        };
+        try {
+            await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(solicitacao) });
+            alert('Solicitação enviada com sucesso! Atualizando o dashboard...');
+            document.getElementById('form-solicitacao').reset();
+            document.getElementById('data-solicitacao').valueAsDate = new Date();
+            openTab({currentTarget: document.querySelector('.nav-tab.active')}, 'dashboard');
+        } catch (error) {
+            console.error('Erro ao salvar:', error);
+            alert('Falha ao salvar a solicitação.');
+        } finally {
+             btn.disabled = false;
+             btn.innerHTML = '<i class="fas fa-save"></i> Salvar Solicitação';
+             carregarDados();
         }
+    }
 
-        function atualizarDashboard(dados, marcas, historico) {
-            const totalSeparados = Object.values(dados).reduce((sum, item) => sum + item.separados, 0);
-            const totalFila = Object.values(dados).reduce((sum, item) => sum + item.fila, 0);
-            const totalGeral = totalSeparados + totalFila;
-            
-            document.getElementById('total-separados').textContent = totalSeparados;
-            document.getElementById('total-fila').textContent = totalFila;
-            document.getElementById('total-geral').textContent = totalGeral;
-            document.getElementById('total-solicitacoes').textContent = historico ? historico.length : 0;
-            
-            document.getElementById('progress-separados').style.width = totalGeral > 0 ? `${(totalSeparados / totalGeral) * 100}%` : '0%';
-            document.getElementById('progress-fila').style.width = totalGeral > 0 ? `${(totalFila / totalGeral) * 100}%` : '0%';
-            document.getElementById('progress-total').style.width = '100%';
-            
-            const tabelaStatus = document.getElementById('tabela-status');
-            tabelaStatus.innerHTML = '';
-            for (const [tipo, valores] of Object.entries(dados)) {
-                const progresso = valores.total > 0 ? (valores.separados / valores.total) * 100 : 0;
-                tabelaStatus.innerHTML += `<tr><td style="text-align: left; font-weight: 600;">${tipo}</td><td>${valores.separados}</td><td>${valores.fila}</td><td>${valores.total}</td><td><div class="progress-bar"><div class="progress-fill" style="width: ${progresso}%; background: var(--success);"></div></div><small>${progresso.toFixed(1)}%</small></td></tr>`;
-            }
-        }
-
-        function atualizarGraficos(dados, marcas) {
-            if (origemChart) origemChart.destroy();
-            if (marcaChart) marcaChart.destroy();
-
-            // GRÁFICO DE BARRAS (DISTRIBUIÇÃO POR TIPO)
-            const ctxOrigem = document.getElementById('origemChart').getContext('2d');
-            origemChart = new Chart(ctxOrigem, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(dados),
-                    datasets: [
-                        { label: 'Itens Separados', data: Object.values(dados).map(d => d.separados), backgroundColor: 'rgba(59, 130, 246, 0.8)' },
-                        { label: 'Peças em Fila', data: Object.values(dados).map(d => d.fila), backgroundColor: 'rgba(245, 158, 11, 0.8)' }
-                    ]
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    scales: { 
-                        // CORREÇÃO: Adicionando cor aos textos do eixo Y (números)
-                        y: { 
-                            beginAtZero: true, 
-                            ticks: { color: 'var(--text-secondary)' }, 
-                            grid: { color: 'rgba(255,255,255,0.05)' } 
-                        }, 
-                        // CORREÇÃO: Adicionando cor aos textos do eixo X (tipos)
-                        x: { 
-                            ticks: { color: 'var(--text-secondary)' }, 
-                            grid: { display: false } 
-                        } 
-                    }, 
-                    plugins: { 
-                        // CORREÇÃO: Adicionando cor aos textos da legenda
-                        legend: { 
-                            labels: { color: 'var(--text-secondary)' } 
-                        } 
-                    } 
-                }
+    async function atualizarStatus(event, rowIndex, currentStatus) {
+        const newStatus = currentStatus === 'Pendente' ? 'Atendido' : 'Pendente';
+        const button = event.target;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        try {
+            await fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({ action: 'updateStatus', rowIndex: rowIndex, newStatus: newStatus })
             });
-
-            // GRÁFICO DE PIZZA (DISTRIBUIÇÃO POR MARCA)
-            const ctxMarca = document.getElementById('marcaChart').getContext('2d');
-            marcaChart = new Chart(ctxMarca, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(marcas),
-                    datasets: [{ 
-                        data: Object.values(marcas), 
-                        backgroundColor: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#64748b'], 
-                        borderColor: 'var(--card-bg)', 
-                        borderWidth: 2 
-                    }]
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    plugins: { 
-                        // CORREÇÃO: Adicionando cor aos textos da legenda
-                        legend: { 
-                            position: 'bottom', 
-                            labels: { color: 'var(--text-secondary)' } 
-                        } 
-                    } 
-                }
-            });
+            carregarDados();
+        } catch (error) {
+            console.error('Erro ao atualizar status:', error);
+            alert('Falha ao atualizar o status.');
+            button.disabled = false;
+            button.innerHTML = currentStatus;
         }
-
-        async function salvarSolicitacao(event) {
-            event.preventDefault();
-            const btn = event.target.querySelector('button[type="submit"]');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
-            const solicitacao = {
-                data: document.getElementById('data-solicitacao').value,
-                tipo: document.getElementById('tipo-atendimento').value,
-                itens: parseInt(document.getElementById('itens-solicitados').value),
-                marcas: { zontes: parseInt(document.getElementById('zontes').value), suzuki: parseInt(document.getElementById('suzuki').value), haojue: parseInt(document.getElementById('haojue').value), kimco: parseInt(document.getElementById('kimco').value), hisun: parseInt(document.getElementById('hisun').value) }
-            };
-            try {
-                await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(solicitacao) });
-                alert('Solicitação enviada com sucesso! Atualizando o dashboard...');
-                document.getElementById('form-solicitacao').reset();
-                document.getElementById('data-solicitacao').valueAsDate = new Date();
-                openTab({currentTarget: document.querySelector('.nav-tab.active')}, 'dashboard');
-            } catch (error) {
-                console.error('Erro ao salvar:', error);
-                alert('Falha ao salvar a solicitação.');
-            } finally {
-                 btn.disabled = false;
-                 btn.innerHTML = '<i class="fas fa-save"></i> Salvar Solicitação';
-                 carregarDados();
-            }
-        }
-
-        async function atualizarStatus(event, rowIndex, currentStatus) {
-            const newStatus = currentStatus === 'Pendente' ? 'Atendido' : 'Pendente';
-            const button = event.target;
-            button.disabled = true;
-            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            try {
-                await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({ action: 'updateStatus', rowIndex: rowIndex, newStatus: newStatus })
-                });
-                carregarDados();
-            } catch (error) {
-                console.error('Erro ao atualizar status:', error);
-                alert('Falha ao atualizar o status.');
-                button.disabled = false;
-                button.innerHTML = currentStatus;
-            }
-        }
-    </script>
+    }
+</script>
+</body>
 </html>
-
-
-
-
-
