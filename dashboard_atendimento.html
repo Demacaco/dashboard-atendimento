@@ -130,7 +130,7 @@
     </div>
 
 <script>
-    const WEB_APP_URL = '                                                                                                                                                                                                                                                              ';
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxwiJzx5fn9i1GqDRuoVa-oLXkLlMGJbihXXojvK5Y1VZA8Ah_3v_VjoZGWNSQQlp-iUw/exec';
 
     let origemChart, marcaChart;
 
@@ -210,7 +210,26 @@
                     { label: 'Peças em Fila', data: Object.values(dados).map(d => d.fila), backgroundColor: 'rgba(245, 158, 11, 0.8)' }
                 ]
             },
-            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: 'var(--text-secondary)' }, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { ticks: { color: 'var(--text-secondary)' }, grid: { display: false } } }, plugins: { legend: { labels: { color: 'var(--text-secondary)' } } } }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                scales: { 
+                    y: { 
+                        beginAtZero: true, 
+                        ticks: { color: '#ffffff' }, // BRANCO
+                        grid: { color: 'rgba(255,255,255,0.1)' } 
+                    }, 
+                    x: { 
+                        ticks: { color: '#ffffff' }, // BRANCO
+                        grid: { display: false } 
+                    } 
+                }, 
+                plugins: { 
+                    legend: { 
+                        labels: { color: '#ffffff' } // BRANCO
+                    } 
+                } 
+            }
         });
 
         const ctxMarca = document.getElementById('marcaChart').getContext('2d');
@@ -218,9 +237,23 @@
             type: 'doughnut',
             data: {
                 labels: Object.keys(marcas),
-                datasets: [{ data: Object.values(marcas), backgroundColor: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#64748b'], borderColor: 'var(--card-bg)', borderWidth: 2 }]
+                datasets: [{ 
+                    data: Object.values(marcas), 
+                    backgroundColor: ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#64748b'], 
+                    borderColor: 'var(--card-bg)', 
+                    borderWidth: 2 
+                }]
             },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: 'var(--text-secondary)' } } } }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { 
+                    legend: { 
+                        position: 'bottom', 
+                        labels: { color: '#ffffff' } // BRANCO
+                    } 
+                } 
+            }
         });
     }
 
