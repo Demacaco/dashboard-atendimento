@@ -169,48 +169,48 @@
     // Variáveis globais
     let marcasChartInstance = null;
     
-    // Dados de exemplo para quando não houver conexão com o script
+    // Dados CORRETOS baseados na sua planilha real
     const dadosExemplo = {
         dadosOrigem: [
             {
                 "Origem": "A4",
                 "Itens_Separados": 26,
                 "Itens_Faltantes": 35,
-                "Total_Itens": 61
+                "Total_Itens": 61 // 26 + 35 = 61
             },
             {
                 "Origem": "Concessionárias",
                 "Itens_Separados": 145,
                 "Itens_Faltantes": 146,
-                "Total_Itens": 291
+                "Total_Itens": 291 // 145 + 146 = 291
             },
             {
                 "Origem": "Garantias",
                 "Itens_Separados": 44,
                 "Itens_Faltantes": 44,
-                "Total_Itens": 88
+                "Total_Itens": 88 // 44 + 44 = 88
             }
         ],
         dadosMarca: [
             {
                 "Marca": "Zontes",
-                "Total_Itens": 132
+                "Total_Itens": 132 // 10 + 88 + 34 = 132
             },
             {
-                "Marca": "Suzuki",
-                "Total_Itens": 56
+                "Marca": "Suzuki", 
+                "Total_Itens": 56 // 17 + 35 + 4 = 56
             },
             {
                 "Marca": "Haouje",
-                "Total_Itens": 33
+                "Total_Itens": 33 // 8 + 21 + 4 = 33
             },
             {
                 "Marca": "Kymco",
-                "Total_Itens": 3
+                "Total_Itens": 3 // 0 + 1 + 2 = 3
             },
             {
                 "Marca": "Hisun",
-                "Total_Itens": 1
+                "Total_Itens": 1 // 0 + 1 + 0 = 1
             }
         ]
     };
@@ -225,7 +225,6 @@
             // Tenta carregar dados do Google Apps Script
             let data;
             try {
-                // Substitua esta URL pela URL do seu Google Apps Script
                 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz7PeDpAFV4QJHLfzUMWs7q6UOw_hqlAV3QmewzRxend4y6H28cSxw70Nqx7Pdxq1doyg/exec";
                 const response = await fetch(SCRIPT_URL + "?t=" + Date.now());
                 
@@ -265,7 +264,7 @@
                 throw new Error('Nenhum dado disponível para exibição');
             }
 
-            // Calcular totais
+            // Calcular totais - CORRETO: apenas separados + fila
             const totais = calcularTotais(dadosOrigem);
             console.log("🧮 Totais calculados:", totais);
 
@@ -287,6 +286,7 @@
     }
 
     function calcularTotais(dados) {
+        // CORREÇÃO: Total Geral = Itens Separados + Peças em Fila (apenas essas duas colunas)
         return {
             separados: dados.reduce((sum, item) => sum + (Number(item.Itens_Separados) || 0), 0),
             fila: dados.reduce((sum, item) => sum + (Number(item.Itens_Faltantes) || 0), 0),
