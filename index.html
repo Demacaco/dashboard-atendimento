@@ -283,25 +283,55 @@
         const btn = event.target.querySelector('button[type="submit"]');
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+        
         const solicitacao = {
             data: document.getElementById('data-solicitacao').value,
             tipo: document.getElementById('tipo-atendimento').value,
             itens: parseInt(document.getElementById('itens-solicitados').value),
-            marcas: { zontes: parseInt(document.getElementById('zontes').value), suzuki: parseInt(document.getElementById('suzuki').value), haojue: parseInt(document.getElementById('haojue').value), kimco: parseInt(document.getElementById('kimco').value), hisun: parseInt(document.getElementById('hisun').value) }
+            marcas: { 
+                zontes: parseInt(document.getElementById('zontes').value) || 0, 
+                suzuki: parseInt(document.getElementById('suzuki').value) || 0, 
+                haojue: parseInt(document.getElementById('haojue').value) || 0, 
+                kimco: parseInt(document.getElementById('kimco').value) || 0, 
+                hisun: parseInt(document.getElementById('hisun').value) || 0
+            },
+            // --- MODIFICAÇÃO IMPORTANTE ---
+            // Adiciona o objeto 'codigos' que o seu Apps Script agora espera.
+            // Sem isso, a função handleNewRequest falha.
+            codigos: {
+                zontes: '',
+                suzuki: '',
+                haojue: '',
+                kimco: '',
+                hisun: ''
+            }
+            // --- FIM DA MODIFICAÇÃO ---
         };
+        
         try {
-            await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(solicitacao) });
+            // NOTA: 'no-cors' impede que você veja a resposta de sucesso, mas a solicitação funciona.
+            // É comum ao postar de um HTML local para o Apps Script.
+            await fetch(WEB_APP_URL, { 
+                method: 'POST', 
+                mode: 'no-cors', // Mantenha 'no-cors' se estiver funcionando
+                body: JSON.stringify(solicitacao) 
+            });
+            
             alert('Solicitação enviada com sucesso! Atualizando o dashboard...');
             document.getElementById('form-solicitacao').reset();
             document.getElementById('data-solicitacao').valueAsDate = new Date();
-            openTab({currentTarget: document.querySelector('.nav-tab.active')}, 'dashboard');
+            
+            // Força a troca para o dashboard e o recarregamento dos dados
+            openTab({currentTarget: document.querySelector('.nav-tab[onclick*="dashboard"]')}, 'dashboard');
+            
         } catch (error) {
             console.error('Erro ao salvar:', error);
             alert('Falha ao salvar a solicitação.');
         } finally {
              btn.disabled = false;
              btn.innerHTML = '<i class="fas fa-save"></i> Salvar Solicitação';
-             carregarDados();
+             // Carrega os dados DEPOIS de tudo, para garantir que a nova linha apareça
+             carregarDados(); 
         }
     }
 
@@ -327,4 +357,5 @@
 </script>
 </body>
 </html>
+
 
