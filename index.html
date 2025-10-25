@@ -278,7 +278,7 @@
         });
     }
 
-    async function salvarSolicitacao(event) {
+   async function salvarSolicitacao(event) {
         event.preventDefault();
         const btn = event.target.querySelector('button[type="submit"]');
         btn.disabled = true;
@@ -294,26 +294,17 @@
                 haojue: parseInt(document.getElementById('haojue').value) || 0, 
                 kimco: parseInt(document.getElementById('kimco').value) || 0, 
                 hisun: parseInt(document.getElementById('hisun').value) || 0
-            },
-            // --- MODIFICAÇÃO IMPORTANTE ---
-            // Adiciona o objeto 'codigos' que o seu Apps Script agora espera.
-            // Sem isso, a função handleNewRequest falha.
-            codigos: {
-                zontes: '',
-                suzuki: '',
-                haojue: '',
-                kimco: '',
-                hisun: ''
             }
+            // --- MODIFICAÇÃO IMPORTANTE ---
+            // O objeto 'codigos' foi REMOVIDO daqui para corresponder
+            // à sua planilha de 10 colunas.
             // --- FIM DA MODIFICAÇÃO ---
         };
         
         try {
-            // NOTA: 'no-cors' impede que você veja a resposta de sucesso, mas a solicitação funciona.
-            // É comum ao postar de um HTML local para o Apps Script.
             await fetch(WEB_APP_URL, { 
                 method: 'POST', 
-                mode: 'no-cors', // Mantenha 'no-cors' se estiver funcionando
+                mode: 'no-cors', 
                 body: JSON.stringify(solicitacao) 
             });
             
@@ -357,5 +348,6 @@
 </script>
 </body>
 </html>
+
 
 
