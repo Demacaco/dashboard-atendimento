@@ -23,6 +23,10 @@
         .nav-tab.active { background: var(--secondary); color: white; }
         .nav-tab:hover { background: var(--secondary); transform: translateY(-2px); }
         .card { background: var(--card-bg); border-radius: var(--border-radius); padding: 25px; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        
+        /* Estilo especial para o Card de Pendências */
+        .card-alert { border-left: 5px solid var(--warning); background: rgba(245, 158, 11, 0.1); }
+        
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .card-title { font-size: 1.4rem; font-weight: 600; color: var(--text); }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
@@ -69,22 +73,67 @@
         </div>
         
         <div id="dashboard" class="tab-content active">
+            <div id="painel-pendencias" class="card card-alert" style="display: none;">
+                <div class="card-header">
+                    <h2 class="card-title" style="color: var(--warning);">
+                        <i class="fas fa-exclamation-triangle"></i> Atenção: Solicitações Pendentes
+                    </h2>
+                    <span id="contador-pendentes" style="background: var(--warning); color: black; padding: 5px 10px; border-radius: 20px; font-weight: bold;">0</span>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Tipo</th>
+                            <th>Itens</th>
+                            <th>Marcas</th>
+                            <th>Ação Rápida</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-pendencias-dashboard">
+                        </tbody>
+                </table>
+            </div>
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">Resumo do Atendimento</h2>
                     <button class="btn btn-primary" onclick="carregarDados()"><i class="fas fa-sync-alt"></i> Atualizar</button>
                 </div>
                 <div class="stats-grid">
-                    <div class="stat-card"><div class="stat-label">Itens Separados</div><div id="total-separados" class="stat-value">0</div><div class="progress-bar"><div id="progress-separados" class="progress-fill" style="width: 0%; background: var(--success);"></div></div></div>
-                    <div class="stat-card"><div class="stat-label">Peças em Fila</div><div id="total-fila" class="stat-value">0</div><div class="progress-bar"><div id="progress-fila" class="progress-fill" style="width: 0%; background: var(--warning);"></div></div></div>
-                    <div class="stat-card"><div class="stat-label">Total de Itens</div><div id="total-geral" class="stat-value">0</div><div class="progress-bar"><div id="progress-total" class="progress-fill" style="width: 0%; background: var(--secondary);"></div></div></div>
-                    <div class="stat-card"><div class="stat-label">Solicitações no Histórico</div><div id="total-solicitacoes" class="stat-value">0</div><div class="progress-bar"><div id="progress-solicitacoes" class="progress-fill" style="width: 100%; background: var(--accent);"></div></div></div>
+                    <div class="stat-card">
+                        <div class="stat-label">Itens Separados</div>
+                        <div id="total-separados" class="stat-value">0</div>
+                        <div class="progress-bar"><div id="progress-separados" class="progress-fill" style="width: 0%; background: var(--success);"></div></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Peças em Fila</div>
+                        <div id="total-fila" class="stat-value">0</div>
+                        <div class="progress-bar"><div id="progress-fila" class="progress-fill" style="width: 0%; background: var(--warning);"></div></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total de Itens</div>
+                        <div id="total-geral" class="stat-value">0</div>
+                        <div class="progress-bar"><div id="progress-total" class="progress-fill" style="width: 0%; background: var(--secondary);"></div></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Solicitações no Histórico</div>
+                        <div id="total-solicitacoes" class="stat-value">0</div>
+                        <div class="progress-bar"><div id="progress-solicitacoes" class="progress-fill" style="width: 100%; background: var(--accent);"></div></div>
+                    </div>
                 </div>
             </div>
+            
             <div class="charts-container">
-                <div class="chart-card"><h3 class="card-title">Distribuição por Tipo</h3><div class="chart-container"><canvas id="origemChart"></canvas></div></div>
-                <div class="chart-card"><h3 class="card-title">Distribuição por Marca</h3><div class="chart-container"><canvas id="marcaChart"></canvas></div></div>
+                <div class="chart-card">
+                    <h3 class="card-title">Distribuição por Tipo</h3>
+                    <div class="chart-container"><canvas id="origemChart"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <h3 class="card-title">Distribuição por Marca</h3>
+                    <div class="chart-container"><canvas id="marcaChart"></canvas></div>
+                </div>
             </div>
+            
             <div class="card">
                 <div class="card-header"><h2 class="card-title">Status por Tipo de Atendimento</h2></div>
                 <table class="data-table">
@@ -100,7 +149,15 @@
                 <form id="form-solicitacao">
                     <div class="form-grid">
                         <div class="form-group"><label class="form-label">Data</label><input type="date" class="form-input" id="data-solicitacao" required></div>
-                        <div class="form-group"><label class="form-label">Tipo</label><select class="form-select" id="tipo-atendimento" required><option value="">Selecione...</option><option value="A4">A4</option><option value="Concessionárias">Concessionárias</option><option value="Garantias">Garantias</option></select></div>
+                        <div class="form-group">
+                            <label class="form-label">Tipo</label>
+                            <select class="form-select" id="tipo-atendimento" required>
+                                <option value="">Selecione...</option>
+                                <option value="A4">A4</option>
+                                <option value="Concessionárias">Concessionárias</option>
+                                <option value="Garantias">Garantias</option>
+                            </select>
+                        </div>
                         <div class="form-group"><label class="form-label">Itens Solicitados</label><input type="number" class="form-input" id="itens-solicitados" min="1" required></div>
                     </div>
                     <div class="form-grid">
@@ -131,7 +188,6 @@
 
 <script>
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyfOE7ksAe-NUKqndnJPPNAAadAxIK_1u-P_bhF64pF7uMv9ZjpFdcS_FG0cSYFjRhFuw/exec';
-
     let origemChart, marcaChart;
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -144,7 +200,7 @@
         document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
         document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
         document.getElementById(tabName).classList.add('active');
-        event.currentTarget.classList.add('active');
+        if(event) event.currentTarget.classList.add('active');
     }
 
     async function carregarDados() {
@@ -165,12 +221,57 @@
             atualizarDashboard(dadosDashboard, data.dadosMarca, data.dadosHistorico);
             atualizarGraficos(dadosDashboard, data.dadosMarca);
             carregarHistorico(data.dadosHistorico);
+            
+            // NOVO: Atualiza o painel de pendências
+            atualizarPendencias(data.dadosHistorico);
 
         } catch (error) {
             console.error('Falha ao carregar dados:', error);
-            alert('Não foi possível carregar os dados da planilha. Verifique o console (F12) para mais detalhes.');
+            alert('Não foi possível carregar os dados. Verifique a conexão.');
             document.getElementById('tabela-status').innerHTML = '<tr><td colspan="5">Erro ao carregar dados.</td></tr>';
             document.getElementById('tabela-historico').innerHTML = '<tr><td colspan="5">Erro ao carregar dados.</td></tr>';
+        }
+    }
+
+    // NOVA FUNÇÃO: Gerencia o alerta de pendências
+    function atualizarPendencias(historico) {
+        const painel = document.getElementById('painel-pendencias');
+        const tbody = document.getElementById('tabela-pendencias-dashboard');
+        const contador = document.getElementById('contador-pendentes');
+        
+        if (!historico) return;
+
+        // Filtra apenas o que é "Pendente"
+        const pendentes = historico.filter(item => item.status === 'Pendente');
+
+        if (pendentes.length > 0) {
+            painel.style.display = 'block'; // Mostra o painel
+            contador.textContent = pendentes.length + (pendentes.length === 1 ? ' Item' : ' Itens');
+            tbody.innerHTML = '';
+            
+            pendentes.forEach(sol => {
+                // Formata as marcas para exibição curta
+                const marcas = Object.entries(sol.marcas)
+                    .filter(([_, v]) => v > 0)
+                    .map(([m, v]) => `${m.charAt(0).toUpperCase() + m.slice(1)}: ${v}`)
+                    .join(', ');
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${sol.data}</td>
+                        <td>${sol.tipo}</td>
+                        <td>${sol.itens}</td>
+                        <td>${marcas || '-'}</td>
+                        <td>
+                            <button class="btn btn-success" style="padding: 5px 15px; font-size: 0.8rem;" onclick="atualizarStatus(event, ${sol.rowIndex}, '${sol.status}')">
+                                <i class="fas fa-check"></i> Concluir
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        } else {
+            painel.style.display = 'none'; // Esconde se não tiver pendências
         }
     }
 
@@ -214,21 +315,10 @@
                 responsive: true, 
                 maintainAspectRatio: false, 
                 scales: { 
-                    y: { 
-                        beginAtZero: true, 
-                        ticks: { color: '#ffffff' }, // BRANCO
-                        grid: { color: 'rgba(255,255,255,0.1)' } 
-                    }, 
-                    x: { 
-                        ticks: { color: '#ffffff' }, // BRANCO
-                        grid: { display: false } 
-                    } 
+                    y: { beginAtZero: true, ticks: { color: '#ffffff' }, grid: { color: 'rgba(255,255,255,0.1)' } }, 
+                    x: { ticks: { color: '#ffffff' }, grid: { display: false } } 
                 }, 
-                plugins: { 
-                    legend: { 
-                        labels: { color: '#ffffff' } // BRANCO
-                    } 
-                } 
+                plugins: { legend: { labels: { color: '#ffffff' } } } 
             }
         });
 
@@ -247,12 +337,7 @@
             options: { 
                 responsive: true, 
                 maintainAspectRatio: false, 
-                plugins: { 
-                    legend: { 
-                        position: 'bottom', 
-                        labels: { color: '#ffffff' } // BRANCO
-                    } 
-                } 
+                plugins: { legend: { position: 'bottom', labels: { color: '#ffffff' } } } 
             }
         });
     }
@@ -295,10 +380,6 @@
                 kimco: parseInt(document.getElementById('kimco').value) || 0, 
                 hisun: parseInt(document.getElementById('hisun').value) || 0
             }
-            // --- MODIFICAÇÃO IMPORTANTE ---
-            // O objeto 'codigos' foi REMOVIDO daqui para corresponder
-            // à sua planilha de 10 colunas.
-            // --- FIM DA MODIFICAÇÃO ---
         };
         
         try {
@@ -312,43 +393,43 @@
             document.getElementById('form-solicitacao').reset();
             document.getElementById('data-solicitacao').valueAsDate = new Date();
             
-            // Força a troca para o dashboard e o recarregamento dos dados
-            openTab({currentTarget: document.querySelector('.nav-tab[onclick*="dashboard"]')}, 'dashboard');
-            
+            // Força a atualização dos dados
+            const dashTab = document.querySelector('.nav-tab[onclick*="dashboard"]');
+            openTab({currentTarget: dashTab}, 'dashboard');
+            carregarDados();
+
         } catch (error) {
             console.error('Erro ao salvar:', error);
             alert('Falha ao salvar a solicitação.');
-        } finally {
-             btn.disabled = false;
-             btn.innerHTML = '<i class="fas fa-save"></i> Salvar Solicitação';
-             // Carrega os dados DEPOIS de tudo, para garantir que a nova linha apareça
-             carregarDados(); 
+        } finally { 
+            btn.disabled = false; 
+            btn.innerHTML = '<i class="fas fa-save"></i> Salvar Solicitação'; 
         }
     }
 
     async function atualizarStatus(event, rowIndex, currentStatus) {
         const newStatus = currentStatus === 'Pendente' ? 'Atendido' : 'Pendente';
-        const button = event.target;
+        const button = event.target.closest('button'); // Garante pegar o botão mesmo se clicar no ícone
+        const originalContent = button.innerHTML;
+        
         button.disabled = true;
         button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        
         try {
             await fetch(WEB_APP_URL, {
                 method: 'POST',
                 mode: 'no-cors',
                 body: JSON.stringify({ action: 'updateStatus', rowIndex: rowIndex, newStatus: newStatus })
             });
-            carregarDados();
+            // Recarrega tudo para atualizar tanto o histórico quanto o painel de pendências
+            carregarDados(); 
         } catch (error) {
             console.error('Erro ao atualizar status:', error);
             alert('Falha ao atualizar o status.');
             button.disabled = false;
-            button.innerHTML = currentStatus;
+            button.innerHTML = originalContent;
         }
     }
 </script>
 </body>
 </html>
-
-
-
-
